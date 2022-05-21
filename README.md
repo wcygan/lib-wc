@@ -1,6 +1,9 @@
 # lib-wc
 
-IDK yet!
+idk yet lol
+
+[![CI](https://github.com/wcygan/lib-wc/actions/workflows/general.yml/badge.svg)](https://github.com/wcygan/lib-wc/actions/workflows/general.yml)
+[![Crates.io](https://img.shields.io/crates/v/lib-wc.svg)](https://crates.io/crates/lib-wc)
 
 ## Development Loop
 
