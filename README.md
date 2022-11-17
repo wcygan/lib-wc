@@ -1,13 +1,17 @@
-# lib-wc
+# [lib-wc](https://crates.io/crates/lib-wc)
 
 idk yet lol
 
 [![CI](https://github.com/wcygan/lib-wc/actions/workflows/general.yml/badge.svg)](https://github.com/wcygan/lib-wc/actions/workflows/general.yml)
 [![Crates.io](https://img.shields.io/crates/v/lib-wc.svg)](https://crates.io/crates/lib-wc)
 
-## Development Loop
+## Publishing to [crates.io](https://crates.io/)
 
-While hacking on this library, you can speed up the perceived time to iterate by watching the repository:
+```zsh
+$ cargo publish
+```
+
+## Development Loop
 
 ```zsh
 $ cargo install cargo-watch
