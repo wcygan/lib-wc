@@ -1,19 +1,15 @@
 #[allow(unused_macros)]
-macro_rules! add{
-    ($a:expr,$b:expr)=>{
-        {
-            $a+$b
-        }
-    }
+macro_rules! add {
+    ($a:expr,$b:expr) => {{
+        $a + $b
+    }};
 }
 
 #[allow(unused_macros)]
-macro_rules! hello{
-    ($a:expr)=>{
-        {
-            String::from("hello ") + $a
-        }
-    }
+macro_rules! hello {
+    ($a:expr) => {{
+        String::from("hello ") + $a
+    }};
 }
 
 #[cfg(test)]
