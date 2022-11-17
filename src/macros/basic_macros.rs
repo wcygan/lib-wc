@@ -1,3 +1,4 @@
+#[allow(unused_macros)]
 macro_rules! add{
     ($a:expr,$b:expr)=>{
         {
