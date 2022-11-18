@@ -7,9 +7,7 @@ struct BasicList<T> {
 
 impl<T> BasicList<T> {
     fn new() -> Self {
-        BasicList {
-            vec: vec![]
-        }
+        BasicList { vec: vec![] }
     }
 
     fn add(&mut self, data: T) {
@@ -35,8 +33,12 @@ mod tests {
         let result = lst.get(0);
 
         match result {
-            None => { panic!() }
-            Some(output) => { assert_eq!(*output, input) }
+            None => {
+                panic!()
+            }
+            Some(output) => {
+                assert_eq!(*output, input)
+            }
         }
     }
 
@@ -55,8 +57,12 @@ mod tests {
             let actual = lst.get(i);
 
             match (expected, actual) {
-                (Some(a), Some(b)) => { assert_eq!(a, b) }
-                (_, _) => { panic!() }
+                (Some(a), Some(b)) => {
+                    assert_eq!(a, b)
+                }
+                (_, _) => {
+                    panic!()
+                }
             }
         }
     }
