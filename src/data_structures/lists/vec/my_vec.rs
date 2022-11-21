@@ -1,8 +1,8 @@
+use std::{alloc, mem, ptr};
 use std::alloc::Layout;
 use std::marker::PhantomData;
-use std::ptr::NonNull;
-use std::{alloc, mem, ptr};
 use std::ops::{Deref, DerefMut};
+use std::ptr::NonNull;
 
 pub struct Vec<T> {
     ptr: NonNull<T>,
@@ -79,6 +79,34 @@ impl<T> Vec<T> {
             unsafe { Some(ptr::read(self.ptr.as_ptr().add(self.len))) }
         }
     }
+
+
+    pub fn insert(&mut self, index: usize, elem: T) {
+        assert!(index <= self.len, "index is out of bounds");
+        if self.cap == self.len { self.grow() }
+
+        unsafe {
+            ptr::copy(self.ptr.as_ptr().add(index),
+                      self.ptr.as_ptr().add(index + 1),
+                      self.len - index,
+            );
+
+            ptr::write(self.ptr.as_ptr(), elem);
+            self.len += 1;
+        }
+    }
+
+    pub fn remove(&mut self, index: usize) -> T {
+        assert!(index < self.len, "index is out of bounds");
+        unsafe {
+            self.len -= 1;
+            let result = ptr::read(self.as_ptr().add(index));
+            ptr::copy(self.ptr.as_ptr().add(index + 1),
+                      self.ptr.as_ptr().add(index),
+                      self.len - index);
+            result
+        }
+    }
 }
 
 impl<T> Deref for Vec<T> {
@@ -99,4 +127,5 @@ impl<T> DerefMut for Vec<T> {
 }
 
 unsafe impl<T: Send> Send for Vec<T> {}
+
 unsafe impl<T: Sync> Sync for Vec<T> {}
