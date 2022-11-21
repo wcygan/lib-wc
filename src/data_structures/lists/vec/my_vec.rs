@@ -2,6 +2,7 @@ use std::alloc::Layout;
 use std::marker::PhantomData;
 use std::ptr::NonNull;
 use std::{alloc, mem, ptr};
+use std::ops::{Deref, DerefMut};
 
 pub struct Vec<T> {
     ptr: NonNull<T>,
@@ -76,6 +77,23 @@ impl<T> Vec<T> {
         } else {
             self.len -= 1;
             unsafe { Some(ptr::read(self.ptr.as_ptr().add(self.len))) }
+        }
+    }
+}
+
+impl<T> Deref for Vec<T> {
+    type Target = [T];
+    fn deref(&self) -> &[T] {
+        unsafe {
+            std::slice::from_raw_parts(self.ptr.as_ptr(), self.len)
+        }
+    }
+}
+
+impl<T> DerefMut for Vec<T> {
+    fn deref_mut(&mut self) -> &mut [T] {
+        unsafe {
+            std::slice::from_raw_parts_mut(self.ptr.as_ptr(), self.len)
         }
     }
 }
