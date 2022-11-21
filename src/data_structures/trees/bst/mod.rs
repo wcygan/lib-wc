@@ -76,12 +76,18 @@ where
 
     /// finds the minimum value of the Tree if it exists, else None
     pub fn minimum(&self) -> Option<&T> {
-        todo!()
+        match &self.left {
+            None => self.value.as_ref(),
+            Some(node) => node.minimum(),
+        }
     }
 
     /// finds the maximum value of the Tree if it exists, else None
     pub fn maximum(&self) -> Option<&T> {
-        todo!()
+        match &self.right {
+            None => self.value.as_ref(),
+            Some(node) => node.maximum(),
+        }
     }
 }
 
