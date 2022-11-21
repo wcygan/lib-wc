@@ -1,3 +1,5 @@
+use std::cmp::Ordering;
+
 /// this is a very simple binary search Tree :)
 /// copied from the-algorithms/rust
 pub struct Tree<T>
@@ -27,19 +29,49 @@ where
         Self {
             value: None,
             left: None,
-            right: None
+            right: None,
+        }
+    }
+
+    /// insert a value into the Tree
+    pub fn insert(&mut self, value: T) {
+        match &self.value {
+            None => self.value = Some(value),
+            Some(current) => {
+                let target = match value.cmp(current) {
+                    Ordering::Less => &mut self.left,
+                    Ordering::Equal | Ordering::Greater => &mut self.right,
+                };
+
+                match target {
+                    None => {
+                        let mut node = Tree::default();
+                        node.insert(value);
+                        *target = Some(Box::new(node));
+                    }
+                    Some(node) => node.insert(value),
+                }
+            }
         }
     }
 
     /// search for a value in the Tree.
     /// returns true iff the value exists in the Tree.
     pub fn search(&self, value: &T) -> bool {
-        todo!()
-    }
-
-    /// insert a value into the Tree
-    pub fn insert(&mut self, value: T) {
-        todo!()
+        match &self.value {
+            None => false,
+            Some(key) => match value.cmp(key) {
+                Ordering::Equal => true,
+                Ordering::Less => match &self.left {
+                    None => false,
+                    Some(node) => node.search(value),
+                },
+                Ordering::Greater => match &self.right {
+                    None => false,
+                    Some(node) => node.search(value),
+                },
+            },
+        }
     }
 
     /// finds the minimum value of the Tree if it exists, else None
@@ -59,7 +91,7 @@ mod tests {
 
     #[test]
     fn default() {
-        let t = Tree::<u32>::default();
+        let _t = Tree::<u32>::default();
     }
 
     #[test]
@@ -109,7 +141,7 @@ mod tests {
 
     #[test]
     fn search_for_value_not_in_tree() {
-        let mut t = Tree::<u32>::default();
+        let t = Tree::<u32>::default();
 
         assert_eq!(t.search(&1), false)
     }
