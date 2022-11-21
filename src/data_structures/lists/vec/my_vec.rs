@@ -1,6 +1,6 @@
-use std::ptr::NonNull;
 use std::marker::PhantomData;
 use std::mem;
+use std::ptr::NonNull;
 
 pub struct Vec<T> {
     ptr: NonNull<T>,
