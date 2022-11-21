@@ -14,7 +14,7 @@ where
     T: Ord,
 {
     fn default() -> Self {
-        todo!()
+        Tree::new()
     }
 }
 
@@ -24,7 +24,11 @@ where
 {
     /// create a new Tree
     pub fn new() -> Tree<T> {
-        todo!()
+        Self {
+            value: None,
+            left: None,
+            right: None
+        }
     }
 
     /// search for a value in the Tree.
