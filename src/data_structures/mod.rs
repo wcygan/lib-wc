@@ -1,3 +1,3 @@
 mod lists;
-mod trees;
 mod queue;
+mod trees;
