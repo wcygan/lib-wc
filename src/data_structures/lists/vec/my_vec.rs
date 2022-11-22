@@ -199,6 +199,20 @@ impl<T> DoubleEndedIterator for IntoIter<T> {
     }
 }
 
+impl<T> Drop for IntoIter<T> {
+    fn drop(&mut self) {
+        if self.cap != 0 {
+            // drop any remaining elements
+            for _ in &mut *self {}
+
+            let layout = Layout::array::<T>(self.cap).unwrap();
+            unsafe {
+                alloc::dealloc(self.buf.as_ptr() as *mut u8, layout);
+            }
+        }
+    }
+}
+
 unsafe impl<T: Send> Send for Vec<T> {}
 
 unsafe impl<T: Sync> Sync for Vec<T> {}
