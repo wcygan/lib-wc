@@ -170,4 +170,22 @@ mod tests {
             t.search(&i);
         }
     }
+
+    #[test]
+    fn find_a_name() {
+        let mut tree = Tree::<String>::default();
+
+        tree.insert("luke".into());
+        tree.insert("william".into());
+        tree.insert("bill".into());
+        tree.insert("marisa".into());
+
+        let name = tree.minimum();
+        match name {
+            None => {}
+            Some(name) => {
+                println!("{}", name)
+            }
+        }
+    }
 }
