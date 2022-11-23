@@ -73,7 +73,8 @@ mod tests {
 
     #[test]
     fn zero_sized_type() {
-        let b = MyBox::new(&mut ());
+        let mut val = ();
+        let b = MyBox::new(&mut val);
 
         let box_value_size = std::mem::size_of_val(&b);
         let box_size = std::mem::size_of::<MyBox<()>>();
