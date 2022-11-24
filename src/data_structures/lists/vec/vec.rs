@@ -21,7 +21,7 @@ impl<T> RawVec<T> {
         // `NonNull::dangling()` doubles as "unallocated" and "zero-sized allocation"
         RawVec {
             ptr: NonNull::dangling(),
-            cap: cap,
+            cap,
             _marker: PhantomData,
         }
     }
@@ -157,7 +157,7 @@ impl<T> Vec<T> {
 
     pub fn drain(&mut self) -> Drain<T> {
         unsafe {
-            let iter = RawValIter::new(&self);
+            let iter = RawValIter::new(self);
 
             // this is a mem::forget safety thing. If Drain is forgotten, we just
             // leak the whole Vec's contents. Also we need to do this *eventually*
@@ -165,7 +165,7 @@ impl<T> Vec<T> {
             self.len = 0;
 
             Drain {
-                iter: iter,
+                iter,
                 vec: PhantomData,
             }
         }
@@ -202,7 +202,7 @@ impl<T> IntoIterator for Vec<T> {
             mem::forget(self);
 
             IntoIter {
-                iter: iter,
+                iter,
                 _buf: buf,
             }
         }
@@ -220,7 +220,7 @@ impl<T> RawValIter<T> {
             start: slice.as_ptr(),
             end: if mem::size_of::<T>() == 0 {
                 ((slice.as_ptr() as usize) + slice.len()) as *const _
-            } else if slice.len() == 0 {
+            } else if slice.is_empty() {
                 slice.as_ptr()
             } else {
                 slice.as_ptr().add(slice.len())
@@ -250,8 +250,8 @@ impl<T> Iterator for RawValIter<T> {
 
     fn size_hint(&self) -> (usize, Option<usize>) {
         let elem_size = mem::size_of::<T>();
-        let len = (self.end as usize - self.start as usize)
-            / if elem_size == 0 { 1 } else { elem_size };
+        let len =
+            (self.end as usize - self.start as usize) / if elem_size == 0 { 1 } else { elem_size };
         (len, Some(len))
     }
 }

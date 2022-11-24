@@ -6,7 +6,9 @@ struct NonblockingCounter {
 
 impl NonblockingCounter {
     pub fn new() -> Self {
-        Self { count: AtomicUsize::new(0) }
+        Self {
+            count: AtomicUsize::new(0),
+        }
     }
 
     pub fn get_and_increment(&self) -> Result<usize, usize> {
@@ -23,7 +25,7 @@ impl NonblockingCounter {
             if res.is_ok() {
                 break;
             } else {
-                return res
+                return res;
             }
         }
 
@@ -42,9 +44,9 @@ unsafe impl Sync for NonblockingCounter {}
 
 #[cfg(test)]
 mod tests {
-    use std::sync::Arc;
     use crate::concurrent::executors::multi_threaded::ThreadPool;
     use crate::concurrent::tools::nonblocking_counter::NonblockingCounter;
+    use std::sync::Arc;
 
     #[test]
     fn values_are_in_range() {

@@ -12,21 +12,15 @@ impl<T> Box<T> {
             NonNull::new(t).unwrap()
         };
 
-        Self {
-            ptr: val
-        }
+        Self { ptr: val }
     }
 
     pub fn read(&self) -> T {
-        unsafe {
-            std::ptr::read(self.ptr.as_ptr())
-        }
+        unsafe { std::ptr::read(self.ptr.as_ptr()) }
     }
 
     pub fn write(&self, val: T) {
-        unsafe {
-            std::ptr::write(self.ptr.as_ptr(), val)
-        }
+        unsafe { std::ptr::write(self.ptr.as_ptr(), val) }
     }
 }
 

@@ -74,7 +74,9 @@ fn main() {
             atomic::fence(Ordering::Acquire);
             // This is safe as we know we have the last pointer to the `ArcInner`
             // and that its pointer is valid.
-            unsafe { Box::from_raw(self.ptr.as_ptr()); }
+            unsafe {
+                Box::from_raw(self.ptr.as_ptr());
+            }
         }
     }
 }
