@@ -1,1 +1,1 @@
-mod my_vec;
+mod vec;

@@ -1,1 +1,1 @@
-mod my_box;
+mod r#box;

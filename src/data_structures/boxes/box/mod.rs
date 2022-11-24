@@ -1,10 +1,10 @@
 use std::ptr::NonNull;
 
-pub struct MyBox<T> {
+pub struct Box<T> {
     ptr: NonNull<T>,
 }
 
-impl<T> MyBox<T> {
+impl<T> Box<T> {
     pub fn new(t: &mut T) -> Self {
         let val: NonNull<T> = if std::mem::size_of::<T>() == 0 {
             NonNull::dangling()
@@ -32,19 +32,19 @@ impl<T> MyBox<T> {
 
 #[cfg(test)]
 mod tests {
-    use crate::data_structures::boxes::my_box::MyBox;
+    use crate::data_structures::boxes::r#box::Box;
 
     #[test]
     fn new() {
         let mut val = 1;
-        let b = MyBox::new(&mut val);
+        let b = Box::new(&mut val);
         assert_eq!(val, b.read())
     }
 
     #[test]
     fn mutate_locally() {
         let mut val = 1;
-        let b = MyBox::new(&mut val);
+        let b = Box::new(&mut val);
 
         // modify the local variable
         val = 10;
@@ -55,7 +55,7 @@ mod tests {
     #[test]
     fn mutate_via_pointer() {
         let mut val: i32 = 1;
-        let b = MyBox::new(&mut val);
+        let b = Box::new(&mut val);
 
         // modify the memory location pointed to by "b"
         let new_val = 10;
@@ -74,10 +74,10 @@ mod tests {
     #[test]
     fn zero_sized_type() {
         let mut val = ();
-        let b = MyBox::new(&mut val);
+        let b = Box::new(&mut val);
 
         let box_value_size = std::mem::size_of_val(&b);
-        let box_size = std::mem::size_of::<MyBox<()>>();
+        let box_size = std::mem::size_of::<Box<()>>();
         assert_eq!(box_size, box_value_size);
 
         let value_size = std::mem::size_of_val(&b.read());
