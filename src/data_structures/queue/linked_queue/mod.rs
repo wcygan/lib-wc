@@ -14,10 +14,7 @@ pub struct LinkedQueue<T> {
 
 impl<T> Node<T> {
     fn new(data: T) -> Self {
-        Self {
-            data,
-            next: None,
-        }
+        Self { data, next: None }
     }
 }
 
@@ -54,9 +51,9 @@ impl<T> LinkedQueue<T> {
     }
 
     pub fn peek(&self) -> Option<&T> {
-        self.head.as_ref().map(|head| unsafe {
-            &(*head.as_ptr()).data
-        })
+        self.head
+            .as_ref()
+            .map(|head| unsafe { &(*head.as_ptr()).data })
     }
 
     pub fn is_empty(&self) -> bool {
@@ -77,7 +74,7 @@ impl<T> LinkedQueue<T> {
 }
 
 mod tests {
-    use super::*;
+    use crate::data_structures::queue::linked_queue::LinkedQueue;
 
     #[test]
     fn basic() {
