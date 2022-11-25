@@ -1,7 +1,7 @@
 pub struct BalancedTree<K, V>
 where
     K: Ord,
-    V: Default
+    V: Default,
 {
     root: Option<Box<Node<K, V>>>,
 }
@@ -9,7 +9,7 @@ where
 struct Node<K, V>
 where
     K: Ord,
-    V: Default
+    V: Default,
 {
     key: K,
     value: V,
@@ -20,7 +20,7 @@ where
 impl<K, V> Node<K, V>
 where
     K: Ord,
-    V: Default
+    V: Default,
 {
     pub fn new(key: K, value: V) -> Self {
         Self {
@@ -34,7 +34,7 @@ where
     pub fn insert(&mut self, key: K, value: V) -> Option<V>
     where
         K: Ord,
-        V: Default
+        V: Default,
     {
         if key < self.key {
             match self.left {
@@ -60,7 +60,7 @@ where
     pub fn get(&self, key: &K) -> Option<&V>
     where
         K: Ord,
-        V: Default
+        V: Default,
     {
         if key < &self.key {
             match self.left {
@@ -80,7 +80,7 @@ where
     pub fn get_mut(&mut self, key: &K) -> Option<&mut V>
     where
         K: Ord,
-        V: Default
+        V: Default,
     {
         if key < &self.key {
             match self.left {
@@ -100,7 +100,7 @@ where
     pub fn remove(&mut self, key: &K) -> Option<V>
     where
         K: Ord,
-    V: Default
+        V: Default,
     {
         if key < &self.key {
             match self.left {
@@ -178,7 +178,7 @@ where
 impl<K, V> BalancedTree<K, V>
 where
     K: Ord,
-    V: Default
+    V: Default,
 {
     pub fn new() -> Self {
         Self { root: None }
@@ -187,7 +187,7 @@ where
     pub fn insert(&mut self, key: K, value: V) -> Option<V>
     where
         K: Ord,
-        V: Default
+        V: Default,
     {
         match self.root {
             Some(ref mut root) => root.insert(key, value),
@@ -201,7 +201,7 @@ where
     pub fn get(&self, key: &K) -> Option<&V>
     where
         K: Ord,
-        V: Default
+        V: Default,
     {
         match self.root {
             Some(ref root) => root.get(key),
@@ -212,7 +212,7 @@ where
     pub fn get_mut(&mut self, key: &K) -> Option<&mut V>
     where
         K: Ord,
-        V: Default
+        V: Default,
     {
         match self.root {
             Some(ref mut root) => root.get_mut(key),
@@ -223,7 +223,7 @@ where
     pub fn remove(&mut self, key: &K) -> Option<V>
     where
         K: Ord,
-        V: Default
+        V: Default,
     {
         match self.root {
             Some(ref mut root) => root.remove(key),
