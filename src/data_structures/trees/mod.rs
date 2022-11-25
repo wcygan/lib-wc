@@ -1,1 +1,1 @@
-mod bst;
+mod basic_tree;
