@@ -201,10 +201,7 @@ impl<T> IntoIterator for Vec<T> {
             let buf = ptr::read(&self.buf);
             mem::forget(self);
 
-            IntoIter {
-                iter,
-                _buf: buf,
-            }
+            IntoIter { iter, _buf: buf }
         }
     }
 }

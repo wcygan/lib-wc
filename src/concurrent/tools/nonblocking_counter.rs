@@ -11,25 +11,25 @@ impl NonblockingCounter {
         }
     }
 
+    /// Get the current value of the counter and increment it
     pub fn get_and_increment(&self) -> Result<usize, usize> {
-        let current_value = self.count.load(Ordering::SeqCst);
+        let mut current_count = self.count.load(Ordering::SeqCst);
 
         loop {
-            let res = self.count.compare_exchange(
-                current_value,
-                current_value + 1,
-                Ordering::SeqCst,
-                Ordering::SeqCst,
-            );
-
-            if res.is_ok() {
-                break;
-            } else {
-                return res;
+            match self.count.compare_exchange_weak(
+                current_count,
+                current_count + 1,
+                Ordering::Acquire,
+                Ordering::Relaxed,
+            ) {
+                Ok(_) => break,
+                Err(count) => {
+                    current_count = count;
+                }
             }
         }
 
-        Ok(current_value)
+        Ok(current_count)
     }
 }
 
@@ -55,19 +55,23 @@ mod tests {
         // spawn a thread pool
         let mut pool = ThreadPool::new(8);
 
+        let range_max = 20;
         // spawn the tasks
-        for i in 0..20 {
+        for i in 0..range_max {
             let counter_clone = counter.clone();
             pool.execute(move || {
                 let res = counter_clone.get_and_increment();
                 assert_eq!(true, res.is_ok());
                 let val = res.unwrap() as i32;
-                let range = 0..20;
+                let range = 0..range_max;
                 assert_eq!(true, range.contains(&val))
             });
         }
 
         // wait for the pool to finish all of the tasks
         drop(pool);
+
+        // verify that the counter is
+        assert_eq!(range_max as usize, counter.get_and_increment().unwrap());
     }
 }
