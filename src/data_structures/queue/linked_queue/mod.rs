@@ -73,8 +73,9 @@ impl<T> LinkedQueue<T> {
     }
 }
 
+#[cfg(test)]
 mod tests {
-    use crate::data_structures::queue::linked_queue::LinkedQueue;
+    use super::*;
 
     #[test]
     fn basic() {

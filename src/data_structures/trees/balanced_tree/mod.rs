@@ -113,7 +113,7 @@ where
                 None => None,
             }
         } else {
-            let value = std::mem::replace(&mut self.value, V::default());
+            let value = std::mem::take(&mut self.value);
             if self.left.is_none() {
                 self.right = None;
             } else if self.right.is_none() {
