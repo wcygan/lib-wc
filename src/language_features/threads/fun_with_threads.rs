@@ -49,4 +49,9 @@ mod tests {
 
         println!("{}", x);
     }
+
+    #[test]
+    fn foo() {
+        
+    }
 }

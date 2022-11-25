@@ -1,4 +1,4 @@
-pub struct BalancedTree<K, V>
+pub struct Tree<K, V>
 where
     K: Ord,
     V: Default,
@@ -175,7 +175,7 @@ where
     }
 }
 
-impl<K, V> BalancedTree<K, V>
+impl<K, V> Tree<K, V>
 where
     K: Ord,
     V: Default,
@@ -274,7 +274,7 @@ mod tests {
 
     #[test]
     fn test_insert_five() {
-        let mut tree = BalancedTree::new();
+        let mut tree = Tree::new();
         tree.insert(5, 5);
         assert_eq!(tree.get(&5), Some(&5));
         assert_eq!(tree.get(&4), None);
@@ -287,7 +287,7 @@ mod tests {
 
     #[test]
     fn test_is_balanced() {
-        let mut tree = BalancedTree::new();
+        let mut tree = Tree::new();
         tree.insert(5, 5);
         tree.insert(4, 4);
         tree.insert(6, 6);
@@ -298,7 +298,7 @@ mod tests {
 
     #[test]
     fn test_height() {
-        let mut tree = BalancedTree::new();
+        let mut tree = Tree::new();
         tree.insert(5, 5);
         tree.insert(4, 4);
         tree.insert(6, 6);
@@ -309,7 +309,7 @@ mod tests {
 
     #[test]
     fn test_get_mut() {
-        let mut tree = BalancedTree::new();
+        let mut tree = Tree::new();
         tree.insert(5, 5);
         tree.insert(4, 4);
         tree.insert(6, 6);
@@ -321,7 +321,7 @@ mod tests {
 
     #[test]
     fn test_min() {
-        let mut tree = BalancedTree::new();
+        let mut tree = Tree::new();
         tree.insert(5, 5);
         tree.insert(4, 4);
         tree.insert(6, 6);
@@ -330,7 +330,7 @@ mod tests {
 
     #[test]
     fn test_max() {
-        let mut tree = BalancedTree::new();
+        let mut tree = Tree::new();
         tree.insert(5, 5);
         tree.insert(4, 4);
         tree.insert(6, 6);
@@ -339,7 +339,7 @@ mod tests {
 
     #[test]
     fn test_remove() {
-        let mut tree = BalancedTree::new();
+        let mut tree = Tree::new();
         tree.insert(5, 5);
         tree.insert(4, 4);
         tree.insert(6, 6);
