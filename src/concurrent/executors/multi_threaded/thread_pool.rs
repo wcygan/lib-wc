@@ -46,6 +46,7 @@ impl ThreadPool {
 }
 
 impl Drop for ThreadPool {
+    /// Waits for remaining jobs to finish and then terminates all workers
     fn drop(&mut self) {
         println!("Sending terminate message to all workers.");
         for _ in &self.workers {
