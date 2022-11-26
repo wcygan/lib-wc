@@ -1,8 +1,9 @@
 #[cfg(test)]
 mod tests {
     use std::collections::VecDeque;
-    use std::sync::{Arc, Mutex};
+    use std::sync::{Arc, Condvar, Mutex};
     use std::thread;
+    use std::thread::sleep;
     use std::time::Duration;
 
     #[test]
@@ -76,5 +77,43 @@ mod tests {
 
         let value = *counter.lock().unwrap();
         assert_eq!(1, value)
+    }
+
+    #[test]
+    fn wait_notify_with_two_threads() {
+        let counter = Arc::new(Mutex::new(0));
+        let condvar = Arc::new(Condvar::new());
+
+        let waiter = thread::spawn({
+            let counter = counter.clone();
+            let condvar = condvar.clone();
+            move || {
+                let mut counter = counter.lock().unwrap();
+
+                while *counter == 0 {
+                    counter = condvar.wait(counter).unwrap();
+                }
+
+                *counter += 1;
+            }
+        });
+
+        let signaler = thread::spawn({
+            let counter = counter.clone();
+            let condvar = condvar.clone();
+            move || {
+                let mut counter = counter.lock().unwrap();
+
+                // signal the waiter to wake up
+                *counter += 1;
+                condvar.notify_one();
+            }
+        });
+
+        signaler.join().unwrap();
+        waiter.join().unwrap();
+
+        let value = *counter.lock().unwrap();
+        assert_eq!(2, value)
     }
 }
