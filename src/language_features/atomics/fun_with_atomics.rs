@@ -1,12 +1,33 @@
+use std::sync::atomic::AtomicU64;
+use std::sync::atomic::Ordering::Relaxed;
+
+/// This function will return the same ID for the lifetime of the program..
+/// Different executions of the program will generate different IDs.
+fn global_id() -> u64 {
+    static KEY: AtomicU64 = AtomicU64::new(0);
+    let key = KEY.load(Relaxed);
+    if key == 0 {
+        let new_key = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_millis() % 1000000;
+        let new_key = (new_key as u64) + 1; // key can never be 0
+        match KEY.compare_exchange(0, new_key, Relaxed, Relaxed) {
+            Ok(_) => new_key,
+            Err(k) => k,
+        }
+    } else {
+        key
+    }
+}
+
 #[cfg(test)]
 mod tests {
+    use super::*;
     use crate::concurrent::executors::multi_threaded::ThreadPool;
     use std::collections::HashSet;
-    use std::sync::atomic::Ordering::Relaxed;
-    use std::sync::atomic::{AtomicBool, AtomicU32, AtomicUsize, Ordering};
+    use std::sync::atomic::Ordering::{Relaxed, SeqCst};
+    use std::sync::atomic::{AtomicBool, AtomicU32, AtomicU64, AtomicUsize, Ordering};
     use std::sync::{Arc, Once};
     use std::thread;
-    use std::thread::sleep;
+    use std::thread::{sleep, Thread};
     use std::time::Duration;
 
     #[test]
@@ -83,6 +104,45 @@ mod tests {
             let next = allocate_new_id();
             assert!(!seen.contains(&next));
             seen.insert(next);
+        }
+    }
+
+    #[test]
+    fn test_compare_exchange_key_set_in_main() {
+        let key = Arc::new(global_id());
+        let pool = ThreadPool::default();
+
+        for _ in 0..10 {
+            let key = key.clone();
+            pool.execute(move || {
+                // test: all threads get the same key
+                let new_key = global_id();
+                assert_eq!(*key, new_key);
+            });
+        }
+    }
+
+    #[test]
+    fn test_compare_exchange_key_set_in_threads() {
+        let (sender, receiver) = std::sync::mpsc::channel::<u64>();
+        let pool = ThreadPool::default();
+
+        for _ in 0..10 {
+            let sender = sender.clone();
+            pool.execute(move || {
+                sender.send(global_id()).unwrap();
+            });
+        }
+
+        let mut values: Vec<u64> = vec![];
+        for _ in 0..10 {
+            values.push(receiver.recv().unwrap());
+        }
+
+        // test: all values are the same
+        let first = values[0];
+        for v in values {
+            assert_eq!(first, v);
         }
     }
 }
