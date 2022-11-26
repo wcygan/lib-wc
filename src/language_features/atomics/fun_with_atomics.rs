@@ -1,12 +1,12 @@
 #[cfg(test)]
 mod tests {
-    use std::sync::Arc;
-    use std::sync::atomic::{AtomicBool, AtomicUsize};
+    use crate::concurrent::executors::multi_threaded::ThreadPool;
     use std::sync::atomic::Ordering::Relaxed;
+    use std::sync::atomic::{AtomicBool, AtomicUsize};
+    use std::sync::Arc;
     use std::thread;
     use std::thread::sleep;
     use std::time::Duration;
-    use crate::concurrent::executors::multi_threaded::ThreadPool;
 
     #[test]
     fn basic_atomic_bool() {
@@ -42,7 +42,9 @@ mod tests {
             // The main thread shows status updates, every second.
             loop {
                 let n = num_done.load(Relaxed);
-                if n == 100 { break; }
+                if n == 100 {
+                    break;
+                }
                 println!("Working.. {n}/100 done");
                 sleep(Duration::from_millis(50));
             }
