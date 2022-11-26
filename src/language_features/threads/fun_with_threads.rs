@@ -1,7 +1,9 @@
 #[cfg(test)]
 mod tests {
-    use std::sync::Arc;
+    use std::collections::VecDeque;
+    use std::sync::{Arc, Mutex};
     use std::thread;
+    use std::time::Duration;
 
     #[test]
     fn spawn_a_thread() {
@@ -51,5 +53,28 @@ mod tests {
     }
 
     #[test]
-    fn foo() {}
+    fn thread_parking() {
+        let counter = Arc::new(Mutex::new(0));
+
+        thread::scope({
+            let counter = counter.clone();
+            |s| {
+                let t = s.spawn({
+                    move || {
+                        let mut counter = counter.lock().unwrap();
+
+                        // park until someone else wakes us up
+                        thread::park();
+                        *counter += 1;
+                    }
+                });
+
+                // wake up the parked thread
+                t.thread().unpark();
+            }
+        });
+
+        let value = *counter.lock().unwrap();
+        assert_eq!(1, value)
+    }
 }
