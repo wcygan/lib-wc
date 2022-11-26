@@ -62,6 +62,14 @@ impl Drop for ThreadPool {
     }
 }
 
+impl Default for ThreadPool {
+    /// Create a new ThreadPool with the number of threads equal to an estimate of the number of processors on the host machine.
+    fn default() -> Self {
+        let parallelism = thread::available_parallelism().unwrap().get();
+        ThreadPool::new(parallelism)
+    }
+}
+
 struct Worker {
     id: usize,
     thread: Option<thread::JoinHandle<()>>,
