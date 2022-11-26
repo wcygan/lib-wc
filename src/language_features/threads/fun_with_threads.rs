@@ -51,7 +51,5 @@ mod tests {
     }
 
     #[test]
-    fn foo() {
-        
-    }
+    fn foo() {}
 }
