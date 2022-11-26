@@ -1,9 +1,10 @@
 #[cfg(test)]
 mod tests {
     use crate::concurrent::executors::multi_threaded::ThreadPool;
+    use std::collections::HashSet;
     use std::sync::atomic::Ordering::Relaxed;
-    use std::sync::atomic::{AtomicBool, AtomicUsize};
-    use std::sync::Arc;
+    use std::sync::atomic::{AtomicBool, AtomicU32, AtomicUsize, Ordering};
+    use std::sync::{Arc, Once};
     use std::thread;
     use std::thread::sleep;
     use std::time::Duration;
@@ -51,5 +52,37 @@ mod tests {
         });
 
         println!("Done!");
+    }
+
+    #[test]
+    fn test_once() {
+        static VAL: AtomicUsize = AtomicUsize::new(0);
+        static CELL: Once = Once::new();
+
+        for _ in 0..10 {
+            CELL.call_once(|| {
+                let current = VAL.load(Ordering::SeqCst);
+                VAL.compare_exchange(current, current + 1, Ordering::SeqCst, Ordering::SeqCst)
+                    .unwrap();
+            });
+        }
+
+        assert_eq!(1, VAL.load(Ordering::SeqCst));
+    }
+
+    #[test]
+    fn test_fetch_add() {
+        fn allocate_new_id() -> u32 {
+            static NEXT_ID: AtomicU32 = AtomicU32::new(0);
+            NEXT_ID.fetch_add(1, Relaxed)
+        }
+
+        let mut seen: HashSet<u32> = HashSet::new();
+
+        for _ in 0..50 {
+            let next = allocate_new_id();
+            assert!(!seen.contains(&next));
+            seen.insert(next);
+        }
     }
 }

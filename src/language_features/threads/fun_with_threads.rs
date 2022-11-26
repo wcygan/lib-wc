@@ -1,12 +1,8 @@
 #[cfg(test)]
 mod tests {
-    use std::collections::VecDeque;
-    use std::iter::once;
-    use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
+
     use std::sync::{Arc, Condvar, Mutex, Once};
     use std::thread;
-    use std::thread::sleep;
-    use std::time::Duration;
 
     #[test]
     fn spawn_a_thread() {
@@ -117,21 +113,5 @@ mod tests {
 
         let value = *counter.lock().unwrap();
         assert_eq!(2, value)
-    }
-
-    #[test]
-    fn test_once() {
-        static VAL: AtomicUsize = AtomicUsize::new(0);
-        static CELL: Once = Once::new();
-
-        for _ in 0..10 {
-            CELL.call_once(|| {
-                let current = VAL.load(Ordering::SeqCst);
-                VAL.compare_exchange(current, current + 1, Ordering::SeqCst, Ordering::SeqCst)
-                    .unwrap();
-            });
-        }
-
-        assert_eq!(1, VAL.load(Ordering::SeqCst));
     }
 }
