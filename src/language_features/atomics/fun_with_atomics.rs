@@ -7,7 +7,11 @@ fn global_id() -> u64 {
     static KEY: AtomicU64 = AtomicU64::new(0);
     let key = KEY.load(Relaxed);
     if key == 0 {
-        let new_key = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_millis() % 1000000;
+        let new_key = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap()
+            .as_millis()
+            % 1000000;
         let new_key = (new_key as u64) + 1; // key can never be 0
         match KEY.compare_exchange(0, new_key, Relaxed, Relaxed) {
             Ok(_) => new_key,
@@ -156,11 +160,41 @@ mod tests {
             READY.store(true, Release); // Everything before this store ..
         });
 
-        while !READY.load(Acquire) { // .. is visible after this load, if it loads `true`.
+        while !READY.load(Acquire) {
+            // .. is visible after this load, if it loads `true`.
             sleep(Duration::from_millis(100));
             println!("waiting...");
         }
 
         assert_eq!(123, DATA.load(Relaxed))
+    }
+
+    #[test]
+    fn test_acquire_release_with_mutex() {
+        // this example uses LOCKED as a mutex for DATA. Threads attempted to lock DATA and do some computation with it
+        static mut DATA: String = String::new();
+        static LOCKED: AtomicBool = AtomicBool::new(false);
+
+        fn f() {
+            if LOCKED
+                .compare_exchange(false, true, Acquire, Relaxed)
+                .is_ok()
+            {
+                // Safety: We hold the exclusive lock, so nothing else is accessing DATA.
+                unsafe { DATA.push('!') };
+                LOCKED.store(false, Release);
+            }
+        }
+
+        thread::scope(|s| {
+            for _ in 0..100 {
+                s.spawn(f);
+            }
+        });
+
+        unsafe {
+            println!("{}", DATA);
+            println!("{}", DATA.len());
+        }
     }
 }
