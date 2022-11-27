@@ -1,4 +1,4 @@
 mod boxes;
 mod lists;
-mod queue;
+mod queues;
 mod trees;
