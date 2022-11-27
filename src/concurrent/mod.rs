@@ -1,2 +1,3 @@
 pub mod executors;
-mod tools;
+pub mod locks;
+pub mod tools;

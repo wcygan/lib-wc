@@ -27,10 +27,10 @@ mod tests {
     use super::*;
     use crate::concurrent::executors::multi_threaded::ThreadPool;
     use std::collections::HashSet;
-    use std::sync::mpsc::*;
     use std::sync::atomic::AtomicPtr;
-    use std::sync::atomic::Ordering::{Acquire, Relaxed, Release};
+    use std::sync::atomic::Ordering::{Acquire, Relaxed, Release, SeqCst};
     use std::sync::atomic::{AtomicBool, AtomicU32, AtomicU64, AtomicUsize, Ordering};
+    use std::sync::mpsc::*;
     use std::sync::{Arc, Once};
     use std::thread::{sleep, Thread};
     use std::time::Duration;
@@ -88,7 +88,7 @@ mod tests {
 
         for _ in 0..10 {
             CELL.call_once(|| {
-                let current = VAL.load(Ordering::SeqCst);
+                let current = VAL.load(SeqCst);
                 VAL.compare_exchange(current, current + 1, Ordering::SeqCst, Ordering::SeqCst)
                     .unwrap();
             });
@@ -243,10 +243,68 @@ mod tests {
         for _ in 0..10 {
             pool.execute({
                 let data = data.clone();
-                move || {
-                    assert_eq!(*data, get_data())
-                }
+                move || assert_eq!(*data, get_data())
             });
+        }
+    }
+
+    #[test]
+    fn test_sequentially_consistent_ordering() {
+        static A: AtomicBool = AtomicBool::new(false);
+        static B: AtomicBool = AtomicBool::new(false);
+
+        static mut S: String = String::new();
+
+        let a = thread::spawn(|| {
+            A.store(true, SeqCst);
+            if !B.load(SeqCst) {
+                unsafe { S.push('!') };
+            }
+        });
+
+        let b = thread::spawn(|| {
+            B.store(true, SeqCst);
+            if !A.load(SeqCst) {
+                unsafe { S.push('!') };
+            }
+        });
+
+        a.join().unwrap();
+        b.join().unwrap();
+
+        assert_eq!(A.load(Relaxed), B.load(Relaxed));
+        let len = unsafe { S.len() };
+
+        // There is a small chance that both threads will load "true", avoiding any modification to S
+        assert!(len == 0 || len == 1);
+    }
+
+    #[test]
+    fn test_fence_acquire_release() {
+        use std::sync::atomic::fence;
+
+        static mut DATA: [u64; 10] = [0; 10];
+
+        const ATOMIC_FALSE: AtomicBool = AtomicBool::new(false);
+        static READY: [AtomicBool; 10] = [ATOMIC_FALSE; 10];
+
+        for i in 0..10 {
+            thread::spawn(move || {
+                let data = 1000;
+                unsafe { DATA[i] = data };
+                READY[i].store(true, Release);
+            });
+        }
+
+        sleep(Duration::from_millis(50));
+        let ready: [bool; 10] = std::array::from_fn(|i| READY[i].load(Relaxed));
+        if ready.contains(&true) {
+            fence(Acquire);
+            for i in 0..10 {
+                if ready[i] {
+                    println!("data{i} = {}", unsafe { DATA[i] });
+                }
+            }
         }
     }
 }
