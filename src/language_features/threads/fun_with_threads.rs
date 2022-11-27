@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod tests {
 
-    use std::sync::{Arc, Condvar, Mutex, Once};
+    use std::sync::{Arc, Condvar, Mutex};
     use std::thread;
 
     #[test]

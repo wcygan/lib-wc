@@ -53,11 +53,11 @@ mod tests {
         let counter = Arc::new(NonblockingCounter::new());
 
         // spawn a thread pool
-        let mut pool = ThreadPool::new(8);
+        let pool = ThreadPool::new(8);
 
         let range_max = 20;
         // spawn the tasks
-        for i in 0..range_max {
+        for _ in 0..range_max {
             let counter_clone = counter.clone();
             pool.execute(move || {
                 let res = counter_clone.get_and_increment();

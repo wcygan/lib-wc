@@ -3,7 +3,7 @@ use std::ops::{Deref, DerefMut};
 use std::sync::atomic::AtomicBool;
 use std::sync::atomic::Ordering::*;
 
-// T doesn't _need_ to be sync because only one thread will have access to it at a time
+// T doesn't need to be sync because only one thread will have access to it at a time
 unsafe impl<T> Sync for SpinLock<T> where T: Send {}
 
 pub struct SpinLock<T> {
@@ -54,8 +54,9 @@ impl<T> Drop for Guard<'_, T> {
     }
 }
 
+#[cfg(test)]
 mod tests {
-    use super::*;
+    use crate::concurrent::locks::SpinLock;
 
     #[test]
     fn test_spinlock() {

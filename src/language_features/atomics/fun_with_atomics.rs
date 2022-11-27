@@ -32,7 +32,7 @@ mod tests {
     use std::sync::atomic::{AtomicBool, AtomicU32, AtomicU64, AtomicUsize, Ordering};
     use std::sync::mpsc::*;
     use std::sync::{Arc, Once};
-    use std::thread::{sleep, Thread};
+    use std::thread::sleep;
     use std::time::Duration;
     use std::{ptr, thread};
 

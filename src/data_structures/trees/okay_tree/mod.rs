@@ -1,3 +1,5 @@
+use std::cmp::Ordering;
+
 pub struct Tree<K, V>
 where
     K: Ord,
@@ -36,24 +38,22 @@ where
         K: Ord,
         V: Default,
     {
-        if key < self.key {
-            match self.left {
+        match key.cmp(&self.key) {
+            Ordering::Less => match self.left {
                 Some(ref mut left) => left.insert(key, value),
                 None => {
                     self.left = Some(Box::new(Node::new(key, value)));
                     None
                 }
-            }
-        } else if key > self.key {
-            match self.right {
+            },
+            Ordering::Greater => match self.right {
                 Some(ref mut right) => right.insert(key, value),
                 None => {
                     self.right = Some(Box::new(Node::new(key, value)));
                     None
                 }
-            }
-        } else {
-            Some(std::mem::replace(&mut self.value, value))
+            },
+            Ordering::Equal => Some(std::mem::replace(&mut self.value, value)),
         }
     }
 
@@ -62,18 +62,16 @@ where
         K: Ord,
         V: Default,
     {
-        if key < &self.key {
-            match self.left {
+        match key.cmp(&self.key) {
+            Ordering::Less => match self.left {
                 Some(ref left) => left.get(key),
                 None => None,
-            }
-        } else if key > &self.key {
-            match self.right {
+            },
+            Ordering::Greater => match self.right {
                 Some(ref right) => right.get(key),
                 None => None,
-            }
-        } else {
-            Some(&self.value)
+            },
+            Ordering::Equal => Some(&self.value),
         }
     }
 
@@ -82,18 +80,16 @@ where
         K: Ord,
         V: Default,
     {
-        if key < &self.key {
-            match self.left {
+        match key.cmp(&self.key) {
+            Ordering::Less => match self.left {
                 Some(ref mut left) => left.get_mut(key),
                 None => None,
-            }
-        } else if key > &self.key {
-            match self.right {
+            },
+            Ordering::Greater => match self.right {
                 Some(ref mut right) => right.get_mut(key),
                 None => None,
-            }
-        } else {
-            Some(&mut self.value)
+            },
+            Ordering::Equal => Some(&mut self.value),
         }
     }
 
@@ -102,34 +98,34 @@ where
         K: Ord,
         V: Default,
     {
-        if key < &self.key {
-            match self.left {
+        match key.cmp(&self.key) {
+            Ordering::Less => match self.left {
                 Some(ref mut left) => left.remove(key),
                 None => None,
-            }
-        } else if key > &self.key {
-            match self.right {
+            },
+            Ordering::Greater => match self.right {
                 Some(ref mut right) => right.remove(key),
                 None => None,
-            }
-        } else {
-            let value = std::mem::take(&mut self.value);
-            if self.left.is_none() {
-                self.right = None;
-            } else if self.right.is_none() {
-                self.left = None;
-            } else {
-                let mut right = self.right.take().unwrap();
-                let mut right_left = right.left.take();
-                while right_left.is_some() {
-                    right = right_left.take().unwrap();
-                    right_left = right.left.take();
+            },
+            Ordering::Equal => {
+                let value = std::mem::take(&mut self.value);
+                if self.left.is_none() {
+                    self.right = None;
+                } else if self.right.is_none() {
+                    self.left = None;
+                } else {
+                    let mut right = self.right.take().unwrap();
+                    let mut right_left = right.left.take();
+                    while right_left.is_some() {
+                        right = right_left.take().unwrap();
+                        right_left = right.left.take();
+                    }
+                    self.key = right.key;
+                    self.value = right.value;
+                    self.right = right.right;
                 }
-                self.key = right.key;
-                self.value = right.value;
-                self.right = right.right;
+                Some(value)
             }
-            Some(value)
         }
     }
 
