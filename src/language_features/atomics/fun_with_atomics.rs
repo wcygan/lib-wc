@@ -27,12 +27,14 @@ mod tests {
     use super::*;
     use crate::concurrent::executors::multi_threaded::ThreadPool;
     use std::collections::HashSet;
+    use std::sync::mpsc::*;
+    use std::sync::atomic::AtomicPtr;
     use std::sync::atomic::Ordering::{Acquire, Relaxed, Release};
     use std::sync::atomic::{AtomicBool, AtomicU32, AtomicU64, AtomicUsize, Ordering};
     use std::sync::{Arc, Once};
-    use std::thread;
     use std::thread::{sleep, Thread};
     use std::time::Duration;
+    use std::{ptr, thread};
 
     #[test]
     fn basic_atomic_bool() {
@@ -128,7 +130,7 @@ mod tests {
 
     #[test]
     fn test_compare_exchange_key_set_in_threads() {
-        let (sender, receiver) = std::sync::mpsc::channel::<u64>();
+        let (sender, receiver) = channel::<u64>();
         let pool = ThreadPool::default();
 
         for _ in 0..10 {
@@ -195,6 +197,56 @@ mod tests {
         unsafe {
             println!("{}", DATA);
             println!("{}", DATA.len());
+        }
+    }
+
+    #[test]
+    fn lazy_initialization_race() {
+        #[derive(Debug)]
+        struct Data {
+            word: String,
+        }
+
+        impl PartialEq for Data {
+            fn eq(&self, other: &Self) -> bool {
+                self.word.eq(&other.word)
+            }
+        }
+
+        fn generate_data() -> Data {
+            Data {
+                word: "lol".to_string(),
+            }
+        }
+
+        fn get_data() -> &'static Data {
+            static PTR: AtomicPtr<Data> = AtomicPtr::new(ptr::null_mut());
+
+            let mut p = PTR.load(Acquire);
+
+            if p.is_null() {
+                p = Box::into_raw(Box::new(generate_data()));
+                if let Err(e) = PTR.compare_exchange(ptr::null_mut(), p, Release, Acquire) {
+                    // Safety: p comes from Box::into_raw right above,
+                    // and wasn't shared with any other thread.
+                    drop(unsafe { Box::from_raw(p) });
+                    p = e;
+                }
+            }
+
+            // Safety: p is not null and points to a properly initialized value.
+            unsafe { &*p }
+        }
+
+        let data = Arc::new(get_data());
+        let pool = ThreadPool::default();
+        for _ in 0..10 {
+            pool.execute({
+                let data = data.clone();
+                move || {
+                    assert_eq!(*data, get_data())
+                }
+            });
         }
     }
 }
