@@ -3,9 +3,6 @@ use std::ops::{Deref, DerefMut};
 use std::sync::atomic::AtomicBool;
 use std::sync::atomic::Ordering::*;
 
-// T doesn't need to be sync because only one thread will have access to it at a time
-unsafe impl<T> Sync for SpinLock<T> where T: Send {}
-
 pub struct SpinLock<T> {
     locked: AtomicBool,
     value: UnsafeCell<T>,
@@ -30,6 +27,9 @@ impl<T> SpinLock<T> {
         Guard { lock: self }
     }
 }
+
+// T doesn't need to be sync because only one thread will have access to it at a time
+unsafe impl<T> Sync for SpinLock<T> where T: Send {}
 
 impl<T> Deref for Guard<'_, T> {
     type Target = T;
