@@ -79,14 +79,17 @@ mod tests {
         let x = SpinLock::new(Vec::new());
 
         std::thread::scope(|s| {
+            s.spawn(|| {
+                x.lock().push(1)
+            });
+
             for _ in 0..100 {
                 s.spawn(|| {
-                    let mut g = x.lock();
-                    g.push(1);
+                    x.lock().push(1)
                 });
             }
         });
 
-        assert_eq!(x.lock().len(), 100);
+        assert_eq!(x.lock().len(), 101);
     }
 }
