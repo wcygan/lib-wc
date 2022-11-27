@@ -79,14 +79,10 @@ mod tests {
         let x = SpinLock::new(Vec::new());
 
         std::thread::scope(|s| {
-            s.spawn(|| {
-                x.lock().push(1)
-            });
+            s.spawn(|| x.lock().push(1));
 
             for _ in 0..100 {
-                s.spawn(|| {
-                    x.lock().push(1)
-                });
+                s.spawn(|| x.lock().push(1));
             }
         });
 
