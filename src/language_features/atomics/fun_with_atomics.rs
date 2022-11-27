@@ -23,7 +23,7 @@ mod tests {
     use super::*;
     use crate::concurrent::executors::multi_threaded::ThreadPool;
     use std::collections::HashSet;
-    use std::sync::atomic::Ordering::{Relaxed, SeqCst};
+    use std::sync::atomic::Ordering::{Acquire, Relaxed, Release};
     use std::sync::atomic::{AtomicBool, AtomicU32, AtomicU64, AtomicUsize, Ordering};
     use std::sync::{Arc, Once};
     use std::thread;
@@ -144,5 +144,23 @@ mod tests {
         for v in values {
             assert_eq!(first, v);
         }
+    }
+
+    #[test]
+    fn test_acquire_release() {
+        static DATA: AtomicU64 = AtomicU64::new(0);
+        static READY: AtomicBool = AtomicBool::new(false);
+
+        thread::spawn(|| {
+            DATA.store(123, Relaxed);
+            READY.store(true, Release); // Everything before this store ..
+        });
+
+        while !READY.load(Acquire) { // .. is visible after this load, if it loads `true`.
+            sleep(Duration::from_millis(100));
+            println!("waiting...");
+        }
+
+        assert_eq!(123, DATA.load(Relaxed))
     }
 }
