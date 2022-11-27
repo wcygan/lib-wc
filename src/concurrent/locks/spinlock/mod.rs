@@ -73,4 +73,20 @@ mod tests {
         let g = x.lock();
         assert!(g.as_slice() == [1, 2, 2] || g.as_slice() == [2, 2, 1]);
     }
+
+    #[test]
+    fn test_multiple_threads() {
+        let x = SpinLock::new(Vec::new());
+
+        std::thread::scope(|s| {
+            for _ in 0..100 {
+                s.spawn(|| {
+                    let mut g = x.lock();
+                    g.push(1);
+                });
+            }
+        });
+
+        assert_eq!(x.lock().len(), 100);
+    }
 }
