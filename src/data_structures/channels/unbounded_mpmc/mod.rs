@@ -1,6 +1,7 @@
 use std::collections::VecDeque;
 use std::sync::{Condvar, Mutex};
 
+/// An unbounded channel that allows multiple producers and multiple consumers
 pub struct Channel<T> {
     queue: Mutex<VecDeque<T>>,
     item_ready: Condvar,
