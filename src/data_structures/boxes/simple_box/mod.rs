@@ -26,7 +26,7 @@ impl<T> Box<T> {
 
 #[cfg(test)]
 mod tests {
-    use crate::data_structures::boxes::r#box::Box;
+    use crate::data_structures::boxes::simple_box::Box;
 
     #[test]
     fn new() {

@@ -1,2 +1,2 @@
-mod arc;
-mod r#box;
+mod nomicon_arc;
+mod simple_box;
