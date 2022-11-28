@@ -1,4 +1,5 @@
 mod bad_oneshot;
 mod better_oneshot;
 mod okay_oneshot;
-mod unbounded_mpmc;
+pub mod oneshot;
+pub mod unbounded_mpmc;
