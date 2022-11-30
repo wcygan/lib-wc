@@ -9,3 +9,4 @@ homepage = "https://github.com/wcygan/lib-wc"
 license = "MPL-2.0"
 
 [dependencies]
+atomic-wait = "1.0.1"
