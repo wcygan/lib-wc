@@ -1,4 +1,4 @@
-use atomic_wait::{wait, wake_all, wake_one};
+use atomic_wait::{wait, wake_one};
 use std::cell::UnsafeCell;
 use std::hint::spin_loop;
 use std::ops::{Deref, DerefMut};
@@ -88,7 +88,6 @@ fn lock_contended(state: &AtomicU32) {
 mod tests {
     use super::*;
     use std::sync::Arc;
-    use std::thread;
     use std::thread::scope;
 
     #[test]
