@@ -1,3 +1,4 @@
+pub use quicksort::quicksort;
 mod quicksort;
 
 pub fn is_sorted<T: Ord>(arr: &mut [T]) -> bool {
