@@ -1,6 +1,6 @@
 use wc::concurrent::locks::{Mutex, NaiveMutex, SpinLock};
 
-static ITERATIONS: usize = 1_000_000;
+static ITERATIONS: usize = 100_000;
 
 // This will benchmark a lock under no contention
 // This means that the current thread is the only thread attempting to acquire the lock
@@ -25,7 +25,7 @@ macro_rules! lock_with_contention(
             bh.bench_function(stringify!($name), move |bh| bh.iter(|| {
                 let lock = <$lockType>::new(0);
                 std::thread::scope(|s| {
-                    for _ in 0..4 {
+                    for _ in 0..16 {
                         s.spawn(|| {
                             for _ in 0..ITERATIONS {
                                 *lock.lock() += 1;
