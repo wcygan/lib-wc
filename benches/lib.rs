@@ -9,9 +9,9 @@ extern crate criterion;
 
 fn default_config() -> Criterion {
     Criterion::default()
-        .sample_size(50)
+        .sample_size(25)
         .warm_up_time(Duration::from_secs(1))
-        .measurement_time(Duration::from_secs(3))
+        .measurement_time(Duration::from_secs(5))
 }
 
 use criterion::{criterion_main, Criterion};

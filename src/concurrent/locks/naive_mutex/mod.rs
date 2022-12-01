@@ -1,13 +1,14 @@
 use atomic_wait::{wait, wake_one};
 use std::cell::UnsafeCell;
-use std::hint::spin_loop;
 use std::ops::{Deref, DerefMut};
 use std::sync::atomic::AtomicU32;
-use std::sync::atomic::Ordering::{Acquire, Relaxed, Release};
+use std::sync::atomic::Ordering::{Acquire, Release};
 
 static UNLOCKED: u32 = 0;
 static LOCKED: u32 = 1;
 
+/// This mutex is naive because it optimize the scenario where multiple threads are in
+/// contention for the lock. See [crate::concurrent::locks::Mutex] for an optimized implementation.
 pub struct NaiveMutex<T> {
     state: AtomicU32,
     value: UnsafeCell<T>,
