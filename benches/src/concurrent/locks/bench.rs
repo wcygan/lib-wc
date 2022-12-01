@@ -38,12 +38,13 @@ macro_rules! lock_with_contention(
     }
 );
 
-lock_uncontended!(mutex_uncontended, Mutex<u32>);
-lock_uncontended!(naive_mutex_uncontended, NaiveMutex<u32>);
-lock_uncontended!(spinlock_uncontended, SpinLock<u32>);
-lock_with_contention!(mutex_with_contention, Mutex<u32>);
-lock_with_contention!(naive_mutex_with_contention, NaiveMutex<u32>);
-lock_with_contention!(spinlock_with_contention, SpinLock<u32>);
+type T = usize;
+lock_uncontended!(mutex_uncontended, Mutex<T>);
+lock_uncontended!(naive_mutex_uncontended, NaiveMutex<T>);
+lock_uncontended!(spinlock_uncontended, SpinLock<T>);
+lock_with_contention!(mutex_with_contention, Mutex<T>);
+lock_with_contention!(naive_mutex_with_contention, NaiveMutex<T>);
+lock_with_contention!(spinlock_with_contention, SpinLock<T>);
 
 criterion_group!(
     name = bench;
