@@ -18,3 +18,11 @@ $ cargo test
 ```bash
 $ cargo bench
 ```
+
+### Run the fuzz tests
+
+hint: you can use `cargo fuzz list` to see the available fuzz targets
+
+```bash
+$ cargo fuzz run <fuzz_target>
+```
