@@ -24,6 +24,6 @@ fn tests(bh: &mut criterion::Criterion) {
 
 criterion_group!(
     name = bench;
-    config = criterion::Criterion::default().sample_size(10);
+    config = crate::default_config();
     targets = tests
 );
