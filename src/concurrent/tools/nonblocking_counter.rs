@@ -1,6 +1,6 @@
 use std::sync::atomic::{AtomicUsize, Ordering};
 
-struct NonblockingCounter {
+pub struct NonblockingCounter {
     count: AtomicUsize,
 }
 

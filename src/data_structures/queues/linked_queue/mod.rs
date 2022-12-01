@@ -73,6 +73,12 @@ impl<T> LinkedQueue<T> {
     }
 }
 
+impl<T> Default for LinkedQueue<T> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

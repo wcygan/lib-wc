@@ -172,6 +172,12 @@ impl<T> Vec<T> {
     }
 }
 
+impl<T> Default for Vec<T> {
+    fn default() -> Self {
+        Vec::new()
+    }
+}
+
 impl<T> Drop for Vec<T> {
     fn drop(&mut self) {
         // deallocation is handled by RawVec

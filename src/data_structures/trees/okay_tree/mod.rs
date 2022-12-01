@@ -1,6 +1,6 @@
 use std::cmp::Ordering;
 
-pub struct Tree<K, V>
+pub struct OkayTree<K, V>
 where
     K: Ord,
     V: Default,
@@ -171,7 +171,7 @@ where
     }
 }
 
-impl<K, V> Tree<K, V>
+impl<K, V> OkayTree<K, V>
 where
     K: Ord,
     V: Default,
@@ -264,13 +264,23 @@ where
     }
 }
 
+impl<K, V> Default for OkayTree<K, V>
+where
+    K: Ord,
+    V: Default,
+{
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
     fn test_insert_five() {
-        let mut tree = Tree::new();
+        let mut tree = OkayTree::new();
         tree.insert(5, 5);
         assert_eq!(tree.get(&5), Some(&5));
         assert_eq!(tree.get(&4), None);
@@ -283,7 +293,7 @@ mod tests {
 
     #[test]
     fn test_is_balanced() {
-        let mut tree = Tree::new();
+        let mut tree = OkayTree::new();
         tree.insert(5, 5);
         tree.insert(4, 4);
         tree.insert(6, 6);
@@ -294,7 +304,7 @@ mod tests {
 
     #[test]
     fn test_height() {
-        let mut tree = Tree::new();
+        let mut tree = OkayTree::new();
         tree.insert(5, 5);
         tree.insert(4, 4);
         tree.insert(6, 6);
@@ -305,7 +315,7 @@ mod tests {
 
     #[test]
     fn test_get_mut() {
-        let mut tree = Tree::new();
+        let mut tree = OkayTree::new();
         tree.insert(5, 5);
         tree.insert(4, 4);
         tree.insert(6, 6);
@@ -317,7 +327,7 @@ mod tests {
 
     #[test]
     fn test_min() {
-        let mut tree = Tree::new();
+        let mut tree = OkayTree::new();
         tree.insert(5, 5);
         tree.insert(4, 4);
         tree.insert(6, 6);
@@ -326,7 +336,7 @@ mod tests {
 
     #[test]
     fn test_max() {
-        let mut tree = Tree::new();
+        let mut tree = OkayTree::new();
         tree.insert(5, 5);
         tree.insert(4, 4);
         tree.insert(6, 6);
@@ -335,7 +345,7 @@ mod tests {
 
     #[test]
     fn test_remove() {
-        let mut tree = Tree::new();
+        let mut tree = OkayTree::new();
         tree.insert(5, 5);
         tree.insert(4, 4);
         tree.insert(6, 6);

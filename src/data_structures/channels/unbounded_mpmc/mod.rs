@@ -35,6 +35,12 @@ impl<T> Channel<T> {
     }
 }
 
+impl<T> Default for Channel<T> {
+    fn default() -> Self {
+        Channel::new()
+    }
+}
+
 #[cfg(test)]
 mod tests {
 

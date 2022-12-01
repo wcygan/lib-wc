@@ -1,31 +1,30 @@
 use std::cmp::Ordering;
 
-/// this is a very simple binary search Tree :)
-/// copied from the-algorithms/rust
-pub struct Tree<T>
+/// this is a very simple binary search Tree
+pub struct BasicTree<T>
 where
     T: Ord,
 {
     value: Option<T>,
-    left: Option<Box<Tree<T>>>,
-    right: Option<Box<Tree<T>>>,
+    left: Option<Box<BasicTree<T>>>,
+    right: Option<Box<BasicTree<T>>>,
 }
 
-impl<T> Default for Tree<T>
+impl<T> Default for BasicTree<T>
 where
     T: Ord,
 {
     fn default() -> Self {
-        Tree::new()
+        BasicTree::new()
     }
 }
 
-impl<T> Tree<T>
+impl<T> BasicTree<T>
 where
     T: Ord,
 {
     /// create a new Tree
-    pub fn new() -> Tree<T> {
+    pub fn new() -> BasicTree<T> {
         Self {
             value: None,
             left: None,
@@ -45,7 +44,7 @@ where
 
                 match target {
                     None => {
-                        let mut node = Tree::default();
+                        let mut node = BasicTree::default();
                         node.insert(value);
                         *target = Some(Box::new(node));
                     }
@@ -97,12 +96,12 @@ mod tests {
 
     #[test]
     fn default() {
-        let _t = Tree::<u32>::default();
+        let _t = BasicTree::<u32>::default();
     }
 
     #[test]
     fn test_minimum() {
-        let mut t = Tree::<u32>::default();
+        let mut t = BasicTree::<u32>::default();
 
         t.insert(1);
         t.insert(2);
@@ -120,7 +119,7 @@ mod tests {
 
     #[test]
     fn test_maximum() {
-        let mut t = Tree::<u32>::default();
+        let mut t = BasicTree::<u32>::default();
 
         t.insert(1);
         t.insert(2);
@@ -138,7 +137,7 @@ mod tests {
 
     #[test]
     fn search_for_value_in_tree() {
-        let mut t = Tree::<u32>::default();
+        let mut t = BasicTree::<u32>::default();
 
         t.insert(1);
 
@@ -147,14 +146,14 @@ mod tests {
 
     #[test]
     fn search_for_value_not_in_tree() {
-        let t = Tree::<u32>::default();
+        let t = BasicTree::<u32>::default();
 
         assert_eq!(t.search(&1), false)
     }
 
     #[test]
     fn insert_does_not_panic() {
-        let mut t = Tree::<u32>::default();
+        let mut t = BasicTree::<u32>::default();
 
         for i in 0..10 {
             t.insert(i)
@@ -163,7 +162,7 @@ mod tests {
 
     #[test]
     fn search_does_not_panic() {
-        let mut t = Tree::<u32>::default();
+        let mut t = BasicTree::<u32>::default();
 
         for i in 0..10 {
             t.insert(i);

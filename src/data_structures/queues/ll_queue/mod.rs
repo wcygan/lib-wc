@@ -3,13 +3,13 @@ use std::collections::LinkedList;
 /// It's just a wrapper around std::collections::LinkedList which does
 /// all of the heavy lifting
 #[derive(Debug)]
-pub struct Queue<T> {
+pub struct BasicQueue<T> {
     elements: LinkedList<T>,
 }
 
-impl<T> Queue<T> {
-    pub fn new() -> Queue<T> {
-        Queue {
+impl<T> BasicQueue<T> {
+    pub fn new() -> BasicQueue<T> {
+        BasicQueue {
             elements: LinkedList::new(),
         }
     }
@@ -35,26 +35,26 @@ impl<T> Queue<T> {
     }
 }
 
-impl<T> Default for Queue<T> {
-    fn default() -> Queue<T> {
-        Queue::new()
+impl<T> Default for BasicQueue<T> {
+    fn default() -> BasicQueue<T> {
+        BasicQueue::new()
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use super::Queue;
+    use super::BasicQueue;
 
     #[test]
     fn test_enqueue() {
-        let mut queue: Queue<u8> = Queue::new();
+        let mut queue: BasicQueue<u8> = BasicQueue::new();
         queue.enqueue(64);
         assert_eq!(queue.is_empty(), false);
     }
 
     #[test]
     fn test_dequeue() {
-        let mut queue: Queue<u8> = Queue::new();
+        let mut queue: BasicQueue<u8> = BasicQueue::new();
         queue.enqueue(32);
         queue.enqueue(64);
         let retrieved_dequeue = queue.dequeue();
@@ -63,7 +63,7 @@ mod tests {
 
     #[test]
     fn test_peek_front() {
-        let mut queue: Queue<u8> = Queue::new();
+        let mut queue: BasicQueue<u8> = BasicQueue::new();
         queue.enqueue(8);
         queue.enqueue(16);
         let retrieved_peek = queue.peek_front();
@@ -72,7 +72,7 @@ mod tests {
 
     #[test]
     fn test_size() {
-        let mut queue: Queue<u8> = Queue::new();
+        let mut queue: BasicQueue<u8> = BasicQueue::new();
         queue.enqueue(8);
         queue.enqueue(16);
         assert_eq!(2, queue.len());
