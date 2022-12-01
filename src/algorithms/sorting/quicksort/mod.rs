@@ -39,9 +39,9 @@ fn partition<T: PartialOrd>(arr: &mut [T], lo: isize, hi: isize) -> isize {
 
 #[cfg(test)]
 mod tests {
-    use quickcheck_macros::quickcheck;
     use super::*;
     use crate::algorithms::sorting::is_sorted;
+    use quickcheck_macros::quickcheck;
 
     #[quickcheck]
     fn is_sorted_property(arr: Vec<i32>) -> bool {
