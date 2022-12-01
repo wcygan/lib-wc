@@ -4,6 +4,7 @@ version = "0.1.3"
 edition = "2021"
 readme = "README.md"
 description = "cool stuff"
+exclude = ["/benches", "/.github", "/fuzz"]
 repository = "https://github.com/wcygan/lib-wc"
 homepage = "https://github.com/wcygan/lib-wc"
 license = "MPL-2.0"

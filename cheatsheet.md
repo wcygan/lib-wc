@@ -28,3 +28,15 @@ $ cargo clippy
 [criterion.rs](https://github.com/bheisler/criterion.rs) is used to benchmark the code.
 
 Running `$ cargo bench` will run the benchmarking suite in [benches/lib.rs](benches/lib.rs).
+
+## Fuzz testing
+
+You need a nightly compiler to run fuzz tests since it uses unstable features.
+
+```zsh
+$ rustup install nightly
+$ rustup default nightly
+$ cargo install cargo-fuzz
+$ cargo-fuzz list
+$ cargo-fuzz run <fuzz_target>
+```
