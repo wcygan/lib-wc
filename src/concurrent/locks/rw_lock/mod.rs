@@ -139,14 +139,22 @@ impl<T> Deref for ReadGuard<'_, T> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::hint::spin_loop;
     use std::sync::Arc;
     use std::thread;
-    use std::thread::scope;
 
     #[test]
     fn test_write_read() {
         let rwlock = Arc::new(RwLock::new(0));
+
+        thread::spawn({
+            let rwlock = rwlock.clone();
+            move || {
+                let guard = rwlock.read();
+                assert_eq!(*guard, 0);
+            }
+        })
+        .join()
+        .unwrap();
 
         thread::spawn({
             let rwlock = rwlock.clone();
@@ -167,52 +175,5 @@ mod tests {
         })
         .join()
         .unwrap();
-    }
-
-    #[test]
-    fn test_read_write_read() {
-        let barrier = Arc::new(AtomicU32::new(0));
-        let rwlock = Arc::new(RwLock::new(0));
-
-        scope(|s| {
-            // the first domino will read 0
-            s.spawn({
-                let rwlock = rwlock.clone();
-                let barrier = barrier.clone();
-                move || {
-                    let r = rwlock.read();
-                    assert_eq!(*r, 0);
-                    barrier.fetch_add(1, Release);
-                }
-            });
-
-            // the second domino will increment it by one
-            s.spawn({
-                let rwlock = rwlock.clone();
-                let barrier = barrier.clone();
-                move || {
-                    while barrier.load(Acquire) == 0 {
-                        spin_loop();
-                    }
-
-                    *rwlock.write() += 1;
-                    barrier.fetch_add(1, Release);
-                }
-            });
-
-            // the third domino will read 1
-            s.spawn({
-                let rwlock = rwlock.clone();
-                let barrier = barrier.clone();
-                move || {
-                    while barrier.load(Acquire) == 1 {
-                        spin_loop();
-                    }
-
-                    let r = rwlock.read();
-                    assert_eq!(*r, 1);
-                }
-            });
-        })
     }
 }
