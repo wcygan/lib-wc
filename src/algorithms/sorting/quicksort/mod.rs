@@ -58,8 +58,9 @@ mod tests {
     #[test]
     fn empty() {
         let mut res: Vec<i32> = vec![];
+        let expected: Vec<i32> = vec![];
         quick_sort(&mut res);
-        assert_eq!(res, vec![]);
+        assert_eq!(res, expected);
     }
 
     #[test]

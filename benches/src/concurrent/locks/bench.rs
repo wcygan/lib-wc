@@ -1,0 +1,29 @@
+use wc::concurrent::locks::{Mutex, SpinLock};
+
+static ITERATIONS: usize = 5_000_000;
+
+fn tests(bh: &mut criterion::Criterion) {
+    bh.bench_function("mutex uncontended", |bh| {
+        bh.iter(|| {
+            let m = Mutex::new(0);
+            for _ in 0..ITERATIONS {
+                *m.lock() += 1;
+            }
+        })
+    });
+
+    bh.bench_function("spinlock uncontended", |bh| {
+        bh.iter(|| {
+            let m = SpinLock::new(0);
+            for _ in 0..ITERATIONS {
+                *m.lock() += 1;
+            }
+        })
+    });
+}
+
+criterion_group!(
+    name = bench;
+    config = criterion::Criterion::default().sample_size(10);
+    targets = tests
+);
