@@ -176,31 +176,42 @@ mod tests {
 
         scope(|s| {
             // the first domino will read 0
-            s.spawn(|| {
-                let r = rwlock.read();
-                assert_eq!(*r, 0);
-                barrier.fetch_add(1, Release);
+            s.spawn({
+                let rwlock = rwlock.clone();
+                let barrier = barrier.clone();
+                move || {
+                    let r = rwlock.read();
+                    assert_eq!(*r, 0);
+                    barrier.fetch_add(1, Release);
+                }
             });
 
             // the second domino will increment it by one
-            s.spawn(|| {
-                while barrier.load(Acquire) == 0 {
-                    spin_loop();
-                }
+            s.spawn({
+                let rwlock = rwlock.clone();
+                let barrier = barrier.clone();
+                move || {
+                    while barrier.load(Acquire) == 0 {
+                        spin_loop();
+                    }
 
-                let mut w = rwlock.write();
-                *w += 1;
-                barrier.fetch_add(1, Release);
+                    *rwlock.write() += 1;
+                    barrier.fetch_add(1, Release);
+                }
             });
 
             // the third domino will read 1
-            s.spawn(|| {
-                while barrier.load(Acquire) == 1 {
-                    spin_loop();
-                }
+            s.spawn({
+                let rwlock = rwlock.clone();
+                let barrier = barrier.clone();
+                move || {
+                    while barrier.load(Acquire) == 1 {
+                        spin_loop();
+                    }
 
-                let r = rwlock.read();
-                assert_eq!(*r, 1);
+                    let r = rwlock.read();
+                    assert_eq!(*r, 1);
+                }
             });
         })
     }
