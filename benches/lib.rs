@@ -15,4 +15,4 @@ fn default_config() -> Criterion {
         .measurement_time(Duration::from_secs(5))
 }
 
-criterion_main!(src::concurrent::locks::bench::bench);
+criterion_main!(src::concurrent::locks::bench);
