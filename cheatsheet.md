@@ -25,4 +25,6 @@ $ cargo clippy
 
 ## Benchmark testing
 
-TODO: investigate [criterion.rs](https://github.com/bheisler/criterion.rs) to benchmark the library
+[criterion.rs](https://github.com/bheisler/criterion.rs) is used to benchmark the code.
+
+Running `$ cargo bench` will run the benchmarking suite in [benches/lib.rs](benches/lib.rs).
