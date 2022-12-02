@@ -44,34 +44,28 @@ unsafe impl Sync for NonblockingCounter {}
 
 #[cfg(test)]
 mod tests {
-    use crate::concurrent::executors::multi_threaded::ThreadPool;
     use crate::concurrent::tools::nonblocking_counter::NonblockingCounter;
     use std::sync::Arc;
+    use std::thread::scope;
 
     #[test]
     fn values_are_in_range() {
         let counter = Arc::new(NonblockingCounter::new());
-
-        // spawn a thread pool
-        let pool = ThreadPool::new(8);
-
         let range_max = 20;
-        // spawn the tasks
-        for _ in 0..range_max {
-            let counter_clone = counter.clone();
-            pool.execute(move || {
-                let res = counter_clone.get_and_increment();
-                assert_eq!(true, res.is_ok());
-                let val = res.unwrap() as i32;
-                let range = 0..range_max;
-                assert_eq!(true, range.contains(&val))
-            });
-        }
 
-        // wait for the pool to finish all of the tasks
-        drop(pool);
+        scope(|s| {
+            for _ in 0..range_max {
+                let counter = counter.clone();
+                s.spawn(move || {
+                    let res = counter.get_and_increment();
+                    assert_eq!(true, res.is_ok());
+                    let val = res.unwrap() as i32;
+                    let range = 0..range_max;
+                    assert_eq!(true, range.contains(&val))
+                });
+            }
+        });
 
-        // verify that the counter is
         assert_eq!(range_max as usize, counter.get_and_increment().unwrap());
     }
 }
