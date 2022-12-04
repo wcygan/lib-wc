@@ -1,3 +1,4 @@
+use crate::data_structures::trees::Tree;
 use std::cmp::Ordering;
 
 /// this is a very simple binary search Tree
@@ -87,6 +88,20 @@ where
             None => self.value.as_ref(),
             Some(node) => node.maximum(),
         }
+    }
+}
+
+impl<T: Ord> Tree<T> for BasicTree<T> {
+    fn new() -> Self {
+        BasicTree::new()
+    }
+
+    fn insert(&mut self, value: T) {
+        self.insert(value)
+    }
+
+    fn contains(&self, value: T) -> bool {
+        self.search(&value)
     }
 }
 
