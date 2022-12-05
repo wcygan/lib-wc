@@ -103,6 +103,10 @@ impl<T: Ord> Tree<T> for BasicTree<T> {
     fn contains(&self, value: T) -> bool {
         self.search(&value)
     }
+
+    fn remove(&mut self, _value: T) -> Option<T> {
+        todo!()
+    }
 }
 
 #[cfg(test)]

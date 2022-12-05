@@ -9,7 +9,6 @@ trait Tree<T: Ord> {
     fn insert(&mut self, value: T);
     /// searches for a value in the tree
     fn contains(&self, value: T) -> bool;
-    // TODO: add `remove`
-    // /// attempts to remove a value from the tree
-    // fn remove(&mut self, value: T) -> Option<T>;
+    /// attempts to remove a value from the tree
+    fn remove(&mut self, value: T) -> Option<T>;
 }
