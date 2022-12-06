@@ -1,7 +1,9 @@
+pub use bubble_sort::bubble_sort;
 pub use quicksort::quicksort;
+mod bubble_sort;
 mod quicksort;
 
-pub fn is_sorted<T: Ord>(arr: &mut [T]) -> bool {
+pub fn is_sorted<T: Ord>(arr: &[T]) -> bool {
     for i in 1..arr.len() {
         if arr[i - 1] > arr[i] {
             return false;
