@@ -4,11 +4,11 @@ pub struct QuickSort {}
 
 impl<T: Ord> Sort<T> for QuickSort {
     fn sort(arr: &mut [T]) {
-        quicksort(arr)
+        quick_sort(arr)
     }
 }
 
-pub fn quicksort<T: Ord>(arr: &mut [T]) {
+pub fn quick_sort<T: Ord>(arr: &mut [T]) {
     let len = arr.len();
     if len > 1 {
         _quick_sort(arr, 0, (len - 1) as isize);

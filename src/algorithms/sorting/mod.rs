@@ -1,9 +1,12 @@
-pub use quicksort::quicksort;
+pub use bubble_sort::BubbleSort;
+pub use insertion_sort::InsertionSort;
+pub use quicksort::QuickSort;
 mod bubble_sort;
+mod insertion_sort;
 mod quicksort;
 
 /// Types that implement this trait can sort slices of data
-trait Sort<T: Ord> {
+pub trait Sort<T: Ord> {
     /// Sorts a slice of data
     fn sort(arr: &mut [T]);
 }
@@ -24,6 +27,7 @@ mod tests {
     #[test]
     fn test_is_sorted() {
         let mut arr = [1, 2, 3, 4, 5];
+
         assert_eq!(true, is_sorted(&mut arr));
     }
 

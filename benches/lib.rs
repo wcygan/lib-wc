@@ -10,9 +10,12 @@ use std::time::Duration;
 
 fn default_config() -> Criterion {
     Criterion::default()
-        .sample_size(25)
+        .sample_size(100)
         .warm_up_time(Duration::from_secs(1))
-        .measurement_time(Duration::from_secs(5))
+        .measurement_time(Duration::from_secs(10))
 }
 
-criterion_main!(src::concurrent::locks::bench);
+criterion_main!(
+    src::algorithms::sorting::bench,
+    src::concurrent::locks::bench,
+);
