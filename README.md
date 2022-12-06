@@ -23,6 +23,14 @@ $ cargo bench
 
 hint: you can use `cargo fuzz list` to see the available fuzz targets
 
+You need to use nightly Rust to run the fuzz tests:
+
 ```bash
-$ cargo fuzz run <fuzz_target>
+$ cargo +nightly fuzz run <fuzz_target>
+```
+
+Example:
+
+```bash
+$ cargo +nightly fuzz run quicksort
 ```
