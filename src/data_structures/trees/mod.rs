@@ -1,14 +1,10 @@
-pub use basic_tree::BasicTree;
-pub use okay_tree::OkayTree;
-mod basic_tree;
-mod okay_tree;
-
-trait Tree<T: Ord> {
+trait Tree<K: Ord, V> {
+    /// Creates a new tree
     fn new() -> Self;
-    /// inserts a value into the tree
-    fn insert(&mut self, value: T);
-    /// searches for a value in the tree
-    fn contains(&self, value: T) -> bool;
-    /// attempts to remove a value from the tree
-    fn remove(&mut self, value: T) -> Option<T>;
+    /// Inserts a value into the tree
+    fn insert(&mut self, key: K, value: V);
+    /// Searches for a value in the tree
+    fn contains(&self, value: K) -> bool;
+    /// Attempts to remove a value from the tree
+    fn remove(&mut self, value: K) -> Option<V>;
 }
