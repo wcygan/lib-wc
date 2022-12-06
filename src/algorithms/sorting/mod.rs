@@ -1,7 +1,12 @@
-pub use bubble_sort::bubble_sort;
 pub use quicksort::quicksort;
 mod bubble_sort;
 mod quicksort;
+
+/// Types that implement this trait can sort slices of data
+trait Sort<T: Ord> {
+    /// Sorts a slice of data
+    fn sort(arr: &mut [T]);
+}
 
 pub fn is_sorted<T: Ord>(arr: &[T]) -> bool {
     for i in 1..arr.len() {
