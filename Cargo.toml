@@ -11,6 +11,8 @@ license = "MPL-2.0"
 
 [dependencies]
 atomic-wait = "1.0.1"
+crossbeam = "0.8.2"
+crossbeam-epoch = "0.9.13"
 
 [dev-dependencies]
 criterion = "0.4.0"
