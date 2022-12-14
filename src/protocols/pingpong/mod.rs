@@ -1,18 +1,18 @@
 use serde_derive::{Deserialize, Serialize};
 
-#[derive(Debug, Serialize, Deserialize)]
 /// The [`PingPong`] protocol is used to bounce N messages between a client and server
 ///
 /// When a server/client recieves a [`PingPong`],
 /// it should respond by [`PingPong::bounce`]ing the message back to the sender.
-pub enum PingPong {
-    Ping(u8),
-    Pong(u8),
-}
-
 #[derive(Debug, Serialize, Deserialize)]
 pub struct PingPongPacket {
     pub pingpong: Option<PingPong>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub enum PingPong {
+    Ping(u8),
+    Pong(u8),
 }
 
 impl PingPong {
