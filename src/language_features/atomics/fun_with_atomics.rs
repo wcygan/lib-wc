@@ -25,7 +25,7 @@ fn global_id() -> u64 {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::concurrent::executors::multi_threaded::ThreadPool;
+    use crate::concurrent::executors::thread_pool::BasicThreadPool;
     use std::collections::HashSet;
     use std::sync::atomic::AtomicPtr;
     use std::sync::atomic::Ordering::{Acquire, Relaxed, Release, SeqCst};
@@ -38,7 +38,7 @@ mod tests {
 
     #[test]
     fn basic_atomic_bool() {
-        let pool = ThreadPool::new(1);
+        let pool = BasicThreadPool::new(1);
 
         let val = Arc::new(AtomicBool::new(false));
 
@@ -116,7 +116,7 @@ mod tests {
     #[test]
     fn test_compare_exchange_key_set_in_main() {
         let key = Arc::new(global_id());
-        let pool = ThreadPool::default();
+        let pool = BasicThreadPool::default();
 
         for _ in 0..10 {
             let key = key.clone();
@@ -131,7 +131,7 @@ mod tests {
     #[test]
     fn test_compare_exchange_key_set_in_threads() {
         let (sender, receiver) = channel::<u64>();
-        let pool = ThreadPool::default();
+        let pool = BasicThreadPool::default();
 
         for _ in 0..10 {
             let sender = sender.clone();
@@ -239,7 +239,7 @@ mod tests {
         }
 
         let data = Arc::new(get_data());
-        let pool = ThreadPool::default();
+        let pool = BasicThreadPool::default();
         for _ in 0..10 {
             pool.execute({
                 let data = data.clone();

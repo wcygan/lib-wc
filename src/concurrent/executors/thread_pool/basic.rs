@@ -8,12 +8,12 @@ enum Message {
     Terminate,
 }
 
-pub struct ThreadPool {
+pub struct BasicThreadPool {
     workers: Vec<Worker>,
     sender: mpsc::Sender<Message>,
 }
 
-impl ThreadPool {
+impl BasicThreadPool {
     /// Create a new ThreadPool.
     ///
     /// The size is the number of threads in the pool.
@@ -21,7 +21,7 @@ impl ThreadPool {
     /// # Panics
     ///
     /// The `new` function will panic if the size is zero.
-    pub fn new(size: usize) -> ThreadPool {
+    pub fn new(size: usize) -> BasicThreadPool {
         assert!(size > 0);
 
         let (sender, receiver) = mpsc::channel();
@@ -32,7 +32,7 @@ impl ThreadPool {
             workers.push(Worker::new(id, Arc::clone(&receiver)));
         }
 
-        ThreadPool { workers, sender }
+        BasicThreadPool { workers, sender }
     }
 
     /// Execute a task in the ThreadPool
@@ -45,7 +45,7 @@ impl ThreadPool {
     }
 }
 
-impl Drop for ThreadPool {
+impl Drop for BasicThreadPool {
     /// Waits for remaining jobs to finish and then terminates all workers
     fn drop(&mut self) {
         println!("Sending terminate message to all workers.");
@@ -63,11 +63,10 @@ impl Drop for ThreadPool {
     }
 }
 
-impl Default for ThreadPool {
+impl Default for BasicThreadPool {
     /// Create a new ThreadPool with the number of threads equal to an estimate of the number of processors on the host machine.
     fn default() -> Self {
-        let parallelism = thread::available_parallelism().unwrap().get();
-        ThreadPool::new(parallelism)
+        BasicThreadPool::new(thread::available_parallelism().unwrap().get())
     }
 }
 
@@ -107,7 +106,7 @@ mod tests {
     #[test]
     fn run() {
         // Setup
-        let pool = ThreadPool::new(1);
+        let pool = BasicThreadPool::new(1);
         let (send, receive) = mpsc::channel();
 
         // Act: spawn a task in the thread-pool which sends a value over the channel
@@ -125,7 +124,7 @@ mod tests {
     #[test]
     fn run_many() {
         // Setup
-        let pool = ThreadPool::new(1);
+        let pool = BasicThreadPool::new(1);
 
         for i in 0..10 {
             pool.execute(move || println!("Task {} completed", i));
