@@ -121,4 +121,16 @@ mod tests {
         let result = receive.recv().unwrap();
         assert_eq!(value, result)
     }
+
+    #[test]
+    fn run_many() {
+        // Setup
+        let pool = ThreadPool::new(1);
+
+        for i in 0..10 {
+            pool.execute(move || println!("Task {} completed", i));
+        }
+
+        drop(pool);
+    }
 }
