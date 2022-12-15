@@ -27,5 +27,4 @@ Pong(7)
 Pong(5)
 Pong(3)
 Pong(1)
-
 ```
