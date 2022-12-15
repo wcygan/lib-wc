@@ -1,3 +1,4 @@
+use super::*;
 use std::sync::{mpsc, Arc, Mutex};
 use std::thread;
 
@@ -13,35 +14,33 @@ pub struct BasicThreadPool {
     sender: mpsc::Sender<Message>,
 }
 
-impl BasicThreadPool {
-    /// Create a new ThreadPool.
-    ///
-    /// The size is the number of threads in the pool.
-    ///
-    /// # Panics
-    ///
-    /// The `new` function will panic if the size is zero.
-    pub fn new(size: usize) -> BasicThreadPool {
-        assert!(size > 0);
+impl ThreadPool for BasicThreadPool {
+    fn new(threads: usize) -> Result<Self>
+    where
+        Self: Sized,
+    {
+        assert!(threads > 0);
 
         let (sender, receiver) = mpsc::channel();
         let receiver = Arc::new(Mutex::new(receiver));
-        let mut workers = Vec::with_capacity(size);
+        let mut workers = Vec::with_capacity(threads);
 
-        for id in 0..size {
+        for id in 0..threads {
             workers.push(Worker::new(id, Arc::clone(&receiver)));
         }
 
-        BasicThreadPool { workers, sender }
+        Ok(BasicThreadPool { workers, sender })
     }
 
-    /// Execute a task in the ThreadPool
-    pub fn execute<F>(&self, f: F)
+    fn spawn<F>(&self, job: F)
     where
         F: FnOnce() + Send + 'static,
     {
-        let job = Box::new(f);
-        self.sender.send(Message::NewJob(job)).unwrap();
+        self.sender.send(Message::NewJob(Box::new(job))).unwrap();
+    }
+
+    fn shutdown(self) {
+        drop(self)
     }
 }
 
@@ -60,13 +59,6 @@ impl Drop for BasicThreadPool {
                 thread.join().unwrap();
             }
         }
-    }
-}
-
-impl Default for BasicThreadPool {
-    /// Create a new ThreadPool with the number of threads equal to an estimate of the number of processors on the host machine.
-    fn default() -> Self {
-        BasicThreadPool::new(thread::available_parallelism().unwrap().get())
     }
 }
 
@@ -106,12 +98,12 @@ mod tests {
     #[test]
     fn run() {
         // Setup
-        let pool = BasicThreadPool::new(1);
+        let pool = BasicThreadPool::new(1).unwrap();
         let (send, receive) = mpsc::channel();
 
         // Act: spawn a task in the thread-pool which sends a value over the channel
         let value = 999;
-        pool.execute(move || send.send(value).unwrap());
+        pool.spawn(move || send.send(value).unwrap());
 
         // Shut the thread-pool down
         drop(pool);
@@ -124,10 +116,10 @@ mod tests {
     #[test]
     fn run_many() {
         // Setup
-        let pool = BasicThreadPool::new(1);
+        let pool = BasicThreadPool::new(1).unwrap();
 
         for i in 0..10 {
-            pool.execute(move || println!("Task {} completed", i));
+            pool.spawn(move || println!("Task {} completed", i));
         }
 
         drop(pool);

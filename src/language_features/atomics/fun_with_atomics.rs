@@ -25,7 +25,7 @@ fn global_id() -> u64 {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::concurrent::executors::thread_pool::BasicThreadPool;
+    use crate::concurrent::executors::thread_pool::*;
     use std::collections::HashSet;
     use std::sync::atomic::AtomicPtr;
     use std::sync::atomic::Ordering::{Acquire, Relaxed, Release, SeqCst};
@@ -38,11 +38,11 @@ mod tests {
 
     #[test]
     fn basic_atomic_bool() {
-        let pool = BasicThreadPool::new(1);
+        let pool = BasicThreadPool::new(1).unwrap();
 
         let val = Arc::new(AtomicBool::new(false));
 
-        pool.execute({
+        pool.spawn({
             let val = val.clone();
             move || {
                 val.store(true, Relaxed);
@@ -116,11 +116,11 @@ mod tests {
     #[test]
     fn test_compare_exchange_key_set_in_main() {
         let key = Arc::new(global_id());
-        let pool = BasicThreadPool::default();
+        let pool = BasicThreadPool::new(available_parallelism()).unwrap();
 
         for _ in 0..10 {
             let key = key.clone();
-            pool.execute(move || {
+            pool.spawn(move || {
                 // test: all threads get the same key
                 let new_key = global_id();
                 assert_eq!(*key, new_key);
@@ -131,11 +131,11 @@ mod tests {
     #[test]
     fn test_compare_exchange_key_set_in_threads() {
         let (sender, receiver) = channel::<u64>();
-        let pool = BasicThreadPool::default();
+        let pool = BasicThreadPool::new(available_parallelism()).unwrap();
 
         for _ in 0..10 {
             let sender = sender.clone();
-            pool.execute(move || {
+            pool.spawn(move || {
                 sender.send(global_id()).unwrap();
             });
         }
@@ -239,9 +239,9 @@ mod tests {
         }
 
         let data = Arc::new(get_data());
-        let pool = BasicThreadPool::default();
+        let pool = BasicThreadPool::new(available_parallelism()).unwrap();
         for _ in 0..10 {
-            pool.execute({
+            pool.spawn({
                 let data = data.clone();
                 move || assert_eq!(*data, get_data())
             });
