@@ -33,7 +33,7 @@ mod tests {
         t.insert(3, 4);
         t.insert(4, 5);
         t.insert(5, 6);
-        assert_eq!(Some((&1, &2)), t.iter().next());
+        assert_eq!(Some((&1, &2)), t.first_key_value());
     }
 
     #[test]
@@ -44,6 +44,6 @@ mod tests {
         t.insert(3, 4);
         t.insert(4, 5);
         t.insert(5, 6);
-        assert_eq!(Some((&5, &6)), t.iter().next_back());
+        assert_eq!(Some((&5, &6)), t.last_key_value());
     }
 }
