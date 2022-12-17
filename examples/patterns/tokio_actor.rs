@@ -3,7 +3,26 @@ use tokio::select;
 use tokio::sync::{mpsc, oneshot};
 use tokio::task::JoinHandle;
 
+/// Run with `cargo run --example tokio-actor`
+///
 /// From https://ryhl.io/blog/actors-with-tokio/
+#[tokio::main]
+async fn main() {
+    let actor = Arc::new(MyActorHandle::new());
+    select! {
+        _ = race("a".into(), &actor) => println!("a won"),
+        _ = race("b".into(), &actor) => println!("b won"),
+    }
+}
+
+fn race(id: String, actor: &Arc<MyActorHandle>) -> JoinHandle<()> {
+    let actor = actor.clone();
+    tokio::spawn(async move {
+        let x = actor.get_unique_id().await;
+        println!("{} got: {}", id, x);
+    })
+}
+
 struct MyActor {
     receiver: mpsc::Receiver<ActorMessage>,
     next_id: u32,
@@ -65,21 +84,4 @@ impl MyActorHandle {
         let _ = self.sender.send(msg).await;
         recv.await.expect("Actor task has been killed")
     }
-}
-
-#[tokio::main]
-async fn main() {
-    let actor = Arc::new(MyActorHandle::new());
-    select! {
-        _ = race("a".into(), &actor) => println!("a won"),
-        _ = race("b".into(), &actor) => println!("b won"),
-    }
-}
-
-fn race(id: String, actor: &Arc<MyActorHandle>) -> JoinHandle<()> {
-    let actor = actor.clone();
-    tokio::spawn(async move {
-        let x = actor.get_unique_id().await;
-        println!("{} got: {}", id, x);
-    })
 }
