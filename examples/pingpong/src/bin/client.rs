@@ -1,4 +1,4 @@
-use lib_wc::protocols::pingpong::{PingPong, PingPongPacket};
+use pingpong::*;
 use std::io::Result;
 use std::io::{Read, Write};
 use std::net::TcpStream;

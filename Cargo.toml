@@ -32,15 +32,3 @@ tokio = { version = "1.23.0", features = ["full"] }
 name = "lib-wc_bench"
 path = "benches/lib.rs"
 harness = false
-
-[[example]]
-name = "client"
-path = "./examples/protocol/client.rs"
-
-[[example]]
-name = "server"
-path = "./examples/protocol/server.rs"
-
-[[example]]
-name = "tokio-actor"
-path = "./examples/patterns/tokio_actor.rs"
