@@ -11,6 +11,10 @@ impl NonblockingCounter {
         }
     }
 
+    pub fn get(&self, ord: Ordering) -> usize {
+        self.count.load(ord)
+    }
+
     /// Get the current value of the counter and increment it
     pub fn get_and_increment(&self) -> Result<usize, usize> {
         let mut current_count = self.count.load(Ordering::SeqCst);
