@@ -1,10 +1,8 @@
-use lib_wc::data_structures::boxes::Arc;
+use std::sync::Arc;
 use tokio::select;
 use tokio::sync::{mpsc, oneshot};
 use tokio::task::JoinHandle;
 
-/// Run with `cargo run --example tokio-actor`
-///
 /// From https://ryhl.io/blog/actors-with-tokio/
 #[tokio::main]
 async fn main() {
