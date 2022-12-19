@@ -2,6 +2,25 @@
 mod tests {
     use std::collections::BTreeMap;
 
+    /// Range queries are useful for finding all the keys in the map within a given range.
+    /// B-Trees are able to process this efficiently because they are sorted.
+    #[test]
+    fn range_query() {
+        let mut map: BTreeMap<usize, usize> = BTreeMap::new();
+
+        for i in 0..100 {
+            map.insert(i, i);
+        }
+
+        let range = 10..20;
+
+        let mut iter = map.range(range);
+
+        for i in 10..20 {
+            assert_eq!(iter.next(), Some((&i, &i)));
+        }
+    }
+
     #[test]
     fn insert() {
         let mut t: BTreeMap<usize, usize> = BTreeMap::new();
