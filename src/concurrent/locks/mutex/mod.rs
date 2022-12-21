@@ -1,10 +1,12 @@
-use atomic_wait::{wait, wake_one};
 use std::cell::UnsafeCell;
 use std::hint::spin_loop;
 use std::ops::{Deref, DerefMut};
 use std::sync::atomic::AtomicU32;
 use std::sync::atomic::Ordering::{Acquire, Relaxed, Release};
 
+use atomic_wait::{wait, wake_one};
+
+// Possible states for the mutex
 static UNLOCKED: u32 = 0;
 static LOCKED: u32 = 1;
 static LOCKED_WITH_WAITERS: u32 = 2;
@@ -86,9 +88,31 @@ fn lock_contended(state: &AtomicU32) {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use std::sync::Arc;
     use std::thread::scope;
+
+    use super::*;
+
+    #[test]
+    fn you_can_modify_the_value() {
+        let m: Arc<Mutex<u8>> = Arc::new(Mutex::new(1));
+
+        {
+            *m.lock() += 1;
+        }
+
+        std::thread::spawn({
+            let m = m.clone();
+            move || {
+                *m.lock() += 1;
+            }
+        })
+            .join()
+            .unwrap();
+
+        let v = *m.lock();
+        assert_eq!(3, v);
+    }
 
     #[test]
     fn test_mutex() {
