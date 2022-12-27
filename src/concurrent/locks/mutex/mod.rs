@@ -107,8 +107,8 @@ mod tests {
                 *m.lock() += 1;
             }
         })
-            .join()
-            .unwrap();
+        .join()
+        .unwrap();
 
         let v = *m.lock();
         assert_eq!(3, v);
