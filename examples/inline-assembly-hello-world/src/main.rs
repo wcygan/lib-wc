@@ -1,10 +1,12 @@
 use std::arch::asm;
 
 /// This example uses the `asm!` macro to do some basic operations.
-#[cfg(all(target_arch = "aarch64"))]
 fn main() {
-    let ten = double(five() as u64);
-    println!("5 * 2 = {}", ten);
+    #[cfg(all(target_arch = "aarch64"))]
+    {
+        let ten = double(five() as u64);
+        println!("5 * 2 = {}", ten);
+    }
 }
 
 #[cfg(all(target_arch = "aarch64"))]
