@@ -1,0 +1,9 @@
+[package]
+name = "actix-actor-pipeline"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+actix = "0.13.0"
+actix-broker = "0.4.3"
+tokio = { version = "1.23.0", features = ["full"] }
