@@ -3,5 +3,5 @@
 version = 3
 
 [[package]]
-name = "inline-assembly-hello-world"
+name = "inline-assembly-basic"
 version = "0.1.0"

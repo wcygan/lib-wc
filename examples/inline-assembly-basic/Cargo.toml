@@ -1,7 +1,6 @@
 [package]
-name = "builder-pattern"
+name = "inline-assembly-basic"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-typed-builder = "0.11.0"
