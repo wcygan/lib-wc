@@ -1,5 +1,6 @@
 use clap::{Parser, Subcommand};
 
+// todo: benchmark with wrk (https://github.com/wg/wrk)
 fn main() {
     let _cli = Cli::parse();
     println!("{:?}", _cli);

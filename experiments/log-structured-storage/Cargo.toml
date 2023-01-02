@@ -1,2 +1,6 @@
 [workspace]
 members = ["kvs-common", "kvs-client", "kvs-server"]
+
+[workspace.dependencies]
+actix = "0.13.0"
+tokio = { version = "1.23.0", features = ["full"] }
