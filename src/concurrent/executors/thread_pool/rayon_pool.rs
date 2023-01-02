@@ -55,4 +55,10 @@ mod tests {
         pool.shutdown();
         assert_eq!(counter.load(Ordering::Relaxed), 100);
     }
+
+    #[test]
+    fn test_wait_no_jobs() {
+        let pool = RayonThreadPool::new(4).unwrap();
+        pool.shutdown();
+    }
 }
