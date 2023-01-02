@@ -1,0 +1,2 @@
+[workspace]
+members = ["kvs-common", "kvs-client", "kvs-server"]
