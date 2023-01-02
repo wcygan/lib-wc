@@ -5,3 +5,4 @@ edition = "2021"
 
 [dependencies]
 kvs-common = { path = "../kvs-common" }
+clap = { version = "4.0.32", features = ["derive"] }
