@@ -1,4 +1,5 @@
-## Examples
+## Experiments
 
-These examples are not necessarily associated with the contents of the [lib-wc](../) library. They're a collection of
-basic examples and experiments.
+A variety of crates that experiment with different aspects of the Rust ecosystem.
+
+These experiments are not necessarily associated with the contents of the [lib-wc](../) library.
