@@ -285,6 +285,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "kvs"
+version = "0.1.0"
+dependencies = [
+ "bincode",
+ "byteorder",
+ "crc",
+ "serde",
+ "serde_derive",
+]
+
+[[package]]
 name = "kvs-client"
 version = "0.1.0"
 dependencies = [
@@ -298,8 +309,6 @@ version = "0.1.0"
 dependencies = [
  "actix",
  "bincode",
- "byteorder",
- "crc",
  "serde",
  "serde_derive",
 ]

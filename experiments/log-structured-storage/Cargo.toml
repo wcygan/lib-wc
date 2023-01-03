@@ -1,6 +1,9 @@
 [workspace]
-members = ["kvs-common", "kvs-client", "kvs-server"]
+members = ["kvs", "kvs-common", "kvs-client", "kvs-server"]
 
 [workspace.dependencies]
 actix = "0.13.0"
 tokio = { version = "1.23.0", features = ["full"] }
+serde = "1.0.152"
+serde_derive = "1.0.152"
+bincode = "1.3.3"
