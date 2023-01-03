@@ -1,49 +1,43 @@
-use std::time::Duration;
-
-use crate::actors::{Processor, Responder};
+use crate::actors::{Database, Responder};
 use actix::{Actor, System};
+use std::future::Future;
+use tokio::net::TcpListener;
 use tokio::select;
-use tracing::info;
+use tracing::{error, info};
 
 mod actors;
+mod server;
 
-/// Potentially use the actor model?
-///  1. Listener    - accepts requestes   - (networking I/O)
-///  2. Processor   - reads/writes to db  - (file I/O)
-///  3. Responder   - responds to clients - (networking I/O)
 #[actix::main]
 async fn main() -> ServerResult<()> {
     set_up_logging()?;
-    start_actors();
-    accept_connections().await?;
+    start_actors()?;
+    run(tokio::signal::ctrl_c()).await?;
     Ok(())
 }
 
-async fn accept_connections() -> ServerResult<()> {
-    // TODO: replace the interval with a tcp listener
-    let mut interval = tokio::time::interval(Duration::from_millis(250));
+async fn run(shutdown: impl Future) -> ServerResult<()> {
+    let mut listener = server::Listener::new().await?;
 
-    info!("server is listening for connections");
-
-    loop {
-        select! {
-            _ = interval.tick() => {
-                info!("tick");
+    select! {
+        res = listener.accept_connections() => {
+            if let Err(err) = res {
+                error!("{:?} encountered an error while accepting connections", err);
             }
-            _ = tokio::signal::ctrl_c() => {
-                info!("ctrl-c received, exiting");
-                System::current().stop();
-                break;
-            }
+        }
+        _ = shutdown => {
+            info!("ctrl-c received, exiting");
+            System::current().stop();
         }
     }
 
     Ok(())
 }
 
-fn start_actors() {
-    Processor.start();
+fn start_actors() -> ServerResult<()> {
+    Database::new()?.start();
     Responder.start();
+    Ok(())
 }
 
 fn set_up_logging() -> ServerResult<()> {
@@ -53,6 +47,13 @@ fn set_up_logging() -> ServerResult<()> {
 type ServerResult<T> = Result<T, ServerError>;
 
 #[derive(Debug)]
-enum ServerError {
+pub enum ServerError {
     TracingInitializationError,
+    DbError(std::io::Error),
+}
+
+impl From<std::io::Error> for ServerError {
+    fn from(e: std::io::Error) -> Self {
+        ServerError::DbError(e)
+    }
 }

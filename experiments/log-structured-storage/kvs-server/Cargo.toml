@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+kvs = { path = "../kvs" }
 kvs-common = { path = "../kvs-common" }
 tracing = "0.1.37"
 tracing-subscriber = "0.3.16"

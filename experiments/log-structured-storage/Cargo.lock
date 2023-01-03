@@ -319,6 +319,7 @@ version = "0.1.0"
 dependencies = [
  "actix",
  "actix-broker",
+ "kvs",
  "kvs-common",
  "tokio",
  "tracing",

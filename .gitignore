@@ -2,3 +2,4 @@
 /Cargo.lock
 .idea
 **/target
+experiments/log-structured-storage/kvs-server/db

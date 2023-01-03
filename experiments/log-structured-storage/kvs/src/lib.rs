@@ -31,7 +31,7 @@ impl KVStore {
         let f = OpenOptions::new()
             .read(true) // Enable reading
             .write(true) // Enable writing (not strictly necessary, as it's implied by append)
-            .create(true) // Create a file at `path` if ir doesn't already exist
+            .create(true) // Create a file at `path` if it doesn't already exist
             .append(true) // Don't delete any content that's already been written to disk.
             .open(path)?;
         let index = HashMap::new();
@@ -108,7 +108,6 @@ impl KVStore {
         let mut f = BufReader::new(&mut self.f);
         f.seek(SeekFrom::Start(position))?;
         let kv = KVStore::process_record(&mut f)?;
-
         Ok(kv)
     }
 
@@ -148,17 +147,31 @@ impl KVStore {
         Ok(())
     }
 
+    /// Writes a variable-sized byte buffer to disk to represent the key-value pair.
+    ///
+    /// The format on disk is as follows:
+    /// `[crc, key_len, val_len, key, value]`
+    ///
+    /// Where crc, key_len, and val_len all have known sizes, and key and value are variable-sized.
+    /// Since the size of the first three values is known, we can use them
+    ///
+    /// The crc is a 32-bit checksum of the key and value, and is used to detect data corruption.
     pub fn insert_but_ignore_index(&mut self, key: &ByteStr, value: &ByteStr) -> io::Result<u64> {
         let mut f = BufWriter::new(&mut self.f);
 
+        // Get the byte length of the key & value
         let key_len = key.len();
         let val_len = value.len();
+
+        // Create a buffer to hold the bytes for the key & value
         let mut tmp = ByteString::with_capacity(key_len + val_len);
 
+        // Write all of the bytes for the key
         for byte in key {
             tmp.push(*byte);
         }
 
+        // Next, write all of the bytes for the value
         for byte in value {
             tmp.push(*byte);
         }
@@ -168,9 +181,14 @@ impl KVStore {
         let next_byte = SeekFrom::End(0);
         let current_position = f.seek(SeekFrom::Current(0))?;
         f.seek(next_byte)?;
+
+        // 1. Write the checksum (known size)
         f.write_u32::<LittleEndian>(checksum)?;
+        // 2. Write the key (known size)
         f.write_u32::<LittleEndian>(key_len as u32)?;
+        // 3. Write the value (known size)
         f.write_u32::<LittleEndian>(val_len as u32)?;
+        // 4. write the byte buffer (variable size)
         f.write_all(&tmp)?;
 
         Ok(current_position)
