@@ -33,3 +33,24 @@ Commands:
 Options:
   -h, --help  Print help information
 ```
+
+### Architecture
+
+The server is implemented as a system of actors built with `tokio`.
+
+There is an [accept loop](server/src/accept.rs) which listens for new connections &
+starts to process them with the actors.
+
+The server is composed of three actors:
+
+1. [Reader](server/src/actors/reader.rs)
+    - Purpose: Network I/O
+    - Read request from the client
+2. [Processor](server/src/actors/processor.rs)
+    - Purpose: Compute
+    - Process the request
+3. [Responder](server/src/actors/responder.rs)
+    - Purpose: Network I/O
+    - Respond to the client with the response
+
+![pipeline](pipeline.png)
