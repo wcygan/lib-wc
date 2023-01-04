@@ -1,5 +1,9 @@
 # Tokio Actor Pipeline
 
+The `server` program demonstrates the usage of a pipeline of actors.
+
+A pipeline is like an assembly line; each actor is responsible for one task & passes it to the next actor when finished. There will be a terminal actor who performs the final task in the pipeline.
+
 ## Usage
 
 In order to see this project in action you need to run both the server and client.
@@ -15,11 +19,9 @@ $ cargo run --bin server
 
 Use `cargo run --bin client` to execute the binary; `ping` and `pong` are the only valid commands.
 
-```sh
-
 See the help information for the client:
 
-```sh
+```
 $ cargo run --bin client
 CLI to send requests to the server
 
@@ -36,21 +38,23 @@ Options:
 
 ### Architecture
 
-The server is implemented as a system of actors built with `tokio`.
+The server is implemented as a system of actors built with [Tokio](https://github.com/tokio-rs/tokio).
 
 There is an [accept loop](server/src/accept.rs) which listens for new connections &
 starts to process them with the actors.
 
-The server is composed of three actors:
+The server is composed of three steps:
 
 1. [Reader](server/src/actors/reader.rs)
-    - Purpose: Network I/O
-    - Read request from the client
+    - Purpose: network I/O
+    - Read a request from the client
+    - Pass the work to the next actor
 2. [Processor](server/src/actors/processor.rs)
-    - Purpose: Compute
+    - Purpose: server-side computation
     - Process the request
+    - Pass the work to the next actor
 3. [Responder](server/src/actors/responder.rs)
-    - Purpose: Network I/O
+    - Purpose: network I/O
     - Respond to the client with the response
 
 ![pipeline](pipeline.png)
