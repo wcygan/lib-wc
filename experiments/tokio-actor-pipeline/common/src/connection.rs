@@ -1,12 +1,13 @@
-use bytes::BytesMut;
-use serde::de::DeserializeOwned;
-use serde::Serialize;
 use std::fmt::Debug;
 use std::io::Cursor;
 
-use crate::error::Error;
+use bytes::BytesMut;
+use serde::de::DeserializeOwned;
+use serde::Serialize;
 use tokio::io::{AsyncReadExt, AsyncWriteExt, BufWriter};
 use tokio::net::TcpStream;
+
+use crate::error::Error;
 
 #[derive(Debug)]
 pub struct Connection {
@@ -24,6 +25,7 @@ impl Connection {
         }
     }
 
+    /// Write a serializable value into the stream
     pub async fn write<T: Serialize>(&mut self, value: &T) -> crate::Result<()> {
         let buf = bincode::serialize(value).map_err(|_e| Error::Ignored)?;
         self.stream.write_all(&buf).await?;
