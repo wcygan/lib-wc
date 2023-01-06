@@ -34,3 +34,7 @@ Example:
 ```bash
 $ cargo +nightly fuzz run quicksort
 ```
+
+## Addendum
+
+I have a variety of [experiments](./experiments/) in this repository that I use to learn about Rust & various crates; they are runnable examples which showcase interesting concepts. 
