@@ -12,7 +12,7 @@ impl System {
     pub fn new() -> crate::Result<Self> {
         let writer = WriterHandle::new();
         let db_processor = DbProcessorHandle::new(writer)?;
-        let reader = ReaderHandle::new(db_processor.clone());
+        let reader = ReaderHandle::new(db_processor);
         Ok(Self { reader })
     }
 

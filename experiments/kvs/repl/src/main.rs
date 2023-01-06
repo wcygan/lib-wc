@@ -1,8 +1,7 @@
 use kvs::KVStore;
-use std::path::Path;
 
 fn main() {
-    let mut kv = KVStore::open(Path::new("tmp")).unwrap();
+    let mut kv = KVStore::open().unwrap();
 
     // A REPL that reads from stdin and writes to stdout
     loop {

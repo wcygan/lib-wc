@@ -1,3 +1,4 @@
+use bincode::deserialize_from;
 use std::collections::HashMap;
 use std::fs::{File, OpenOptions};
 use std::io;
@@ -9,8 +10,15 @@ use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use crc::{Crc, CRC_31_PHILIPS};
 use serde_derive::{Deserialize, Serialize};
 
+/// The file which stores the index for the database
+static DB_INDEX: &str = "kvs.index";
+/// The file which stores the log of the database
+static DB_FILE: &str = "kvs.db";
+
 pub type ByteString = Vec<u8>;
 pub type ByteStr = [u8];
+
+const CRC_U32: Crc<u32> = Crc::<u32>::new(&CRC_31_PHILIPS);
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct KVPair {
@@ -21,28 +29,25 @@ pub struct KVPair {
 /// A key-value database adapted from 'Rust in Action'
 #[derive(Debug)]
 pub struct KVStore {
-    f: File,
+    log: File,
     pub index: HashMap<ByteString, u64>,
 }
 
-const CRC_U32: Crc<u32> = Crc::<u32>::new(&CRC_31_PHILIPS);
-
 impl KVStore {
-    pub fn open(path: &Path) -> io::Result<Self> {
-        let f = OpenOptions::new()
-            .read(true) // Enable reading
-            .write(true) // Enable writing (not strictly necessary, as it's implied by append)
-            .create(true) // Create a file at `path` if it doesn't already exist
-            .append(true) // Don't delete any content that's already been written to disk.
-            .open(path)?;
+    pub fn open() -> io::Result<Self> {
+        let log = open(Path::new(DB_FILE))?;
+        let index = KVStore::open_index()?;
+        Ok(KVStore { log, index })
+    }
 
-        let index = HashMap::new();
-
-        // TODO @wcygan: read through the file & populate the index...
-        //       currently we cannot shut the server down, start it up again,
-        //       and use previously-stored data
-
-        Ok(KVStore { f, index })
+    fn open_index() -> io::Result<HashMap<ByteString, u64>> {
+        match deserialize_from(open(Path::new(DB_INDEX))?) {
+            Ok(index) => Ok(index),
+            Err(_) => {
+                println!("error deserializing index, creating new index");
+                Ok(HashMap::new())
+            }
+        }
     }
 
     /// Assumes that f is already at the right place in the file
@@ -75,11 +80,11 @@ impl KVStore {
     }
 
     pub fn seek_to_end(&mut self) -> io::Result<u64> {
-        self.f.seek(SeekFrom::End(0))
+        self.log.seek(SeekFrom::End(0))
     }
 
     pub fn load(&mut self) -> io::Result<()> {
-        let mut f = BufReader::new(&mut self.f);
+        let mut f = BufReader::new(&mut self.log);
 
         loop {
             let current_position = f.seek(SeekFrom::Current(0))?;
@@ -112,14 +117,14 @@ impl KVStore {
     }
 
     pub fn get_at(&mut self, position: u64) -> io::Result<KVPair> {
-        let mut f = BufReader::new(&mut self.f);
+        let mut f = BufReader::new(&mut self.log);
         f.seek(SeekFrom::Start(position))?;
         let kv = KVStore::process_record(&mut f)?;
         Ok(kv)
     }
 
     pub fn find(&mut self, target: &ByteStr) -> io::Result<Option<(u64, ByteString)>> {
-        let mut f = BufReader::new(&mut self.f);
+        let mut f = BufReader::new(&mut self.log);
 
         let mut found: Option<(u64, ByteString)> = None;
 
@@ -164,7 +169,7 @@ impl KVStore {
     ///
     /// The crc is a 32-bit checksum of the key and value, and is used to detect data corruption.
     pub fn insert_but_ignore_index(&mut self, key: &ByteStr, value: &ByteStr) -> io::Result<u64> {
-        let mut f = BufWriter::new(&mut self.f);
+        let mut f = BufWriter::new(&mut self.log);
 
         // Get the byte length of the key & value
         let key_len = key.len();
@@ -210,6 +215,41 @@ impl KVStore {
     pub fn delete(&mut self, key: &ByteStr) -> io::Result<()> {
         self.insert(key, b"")
     }
+}
+
+impl Drop for KVStore {
+    /// Serialize the index to disk when the [`KVStore`] is dropped
+    fn drop(&mut self) {
+        let f = match open(Path::new(DB_INDEX)) {
+            Ok(f) => f,
+            Err(_) => {
+                panic!("error opening the index, potential data loss");
+            }
+        };
+
+        match bincode::serialize(&self.index) {
+            Ok(bytes) => {
+                let mut writer = BufWriter::new(f);
+                match writer.write_all(&bytes) {
+                    Ok(_) => {}
+                    Err(_) => {
+                        panic!("error writing to the index, potential data loss");
+                    }
+                }
+            }
+            Err(_) => {
+                panic!("error serializing index, potential data loss");
+            }
+        }
+    }
+}
+
+fn open(f: &Path) -> io::Result<File> {
+    OpenOptions::new()
+        .read(true)
+        .write(true)
+        .create(true)
+        .open(f)
 }
 
 #[cfg(test)]

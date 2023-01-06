@@ -2,10 +2,8 @@ use crate::actors::writer::WriterHandle;
 use kvs_common::connection::Connection;
 use kvs_common::requests::{Request, Response};
 use std::io::Error;
-use std::path::Path;
-use tokio::spawn;
 
-static DB_FILE: &str = "kvs.db";
+use tokio::spawn;
 
 #[derive(Debug, Clone)]
 pub struct DbProcessorHandle {
@@ -26,7 +24,7 @@ struct DbProcessorMessage {
 
 impl DbProcessorHandle {
     pub fn new(writer: WriterHandle) -> crate::Result<Self> {
-        let kv_store = kvs::KVStore::open(Path::new(DB_FILE)).unwrap();
+        let kv_store = kvs::KVStore::open()?;
 
         let (tx, rx) = tokio::sync::mpsc::channel(100);
 

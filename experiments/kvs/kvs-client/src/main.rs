@@ -7,7 +7,7 @@ use kvs_common::DEFAULT_ADDRESS;
 async fn main() -> kvs_common::Result<()> {
     let cli = Cli::parse();
     let mut conn = Connection::dial(DEFAULT_ADDRESS).await?;
-    conn.write::<Request>(&cli.command.into()).await?;
+    conn.write::<Request>(&cli.command).await?;
     let response = conn.read::<Response>().await?;
     match response {
         Some(response) => {
