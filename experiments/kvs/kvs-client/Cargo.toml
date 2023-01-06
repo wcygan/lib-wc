@@ -1,0 +1,11 @@
+[package]
+name = "kvs-client"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+kvs-common = { path = "../kvs-common" }
+clap.workspace = true
+tokio.workspace = true
+bincode.workspace = true
+serde.workspace = true

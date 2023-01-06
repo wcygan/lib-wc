@@ -1,0 +1,11 @@
+[package]
+name = "kvs"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+byteorder = "1.4.3"
+crc = "3.0.0"
+bincode.workspace = true
+serde.workspace = true
+serde_derive.workspace = true
