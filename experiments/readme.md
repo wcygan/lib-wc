@@ -6,4 +6,4 @@ These experiments are not necessarily associated with the contents of the [lib-w
 
 ### Some of the cool ones
 
-1. [kvs](./kvs/readme.md) - a key-value store (File System I/O, Networking I/O, Tokio, Serialization)
+1. [kvs](./kvs/) - a key-value store (File System I/O, Networking I/O, Tokio, Serialization)
