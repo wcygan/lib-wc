@@ -23,3 +23,7 @@ $ grpcurl -plaintext -import-path ./proto -proto proto/hello.proto -d '{"name": 
 {
   "message": "Hello Tonic!"
 }
+
+# Notes
+
+I'm having trouble getting CLion to index the generated code. It is mentioned [in the readme](https://github.com/hyperium/tonic#getting-started) but I haven't figured it out yet...
