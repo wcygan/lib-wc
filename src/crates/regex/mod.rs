@@ -26,50 +26,19 @@ mod tests {
 
     #[test]
     fn any_capitalization_of_hello_occurring_at_least_once_in_any_string() {
-        let any_capitalization_of_hello_occurring_at_least_once_in_any_string =
-            Regex::new(r"(?i).*hello.*").unwrap();
-        assert!(
-            any_capitalization_of_hello_occurring_at_least_once_in_any_string.is_match("Hello")
-        );
-        assert!(
-            any_capitalization_of_hello_occurring_at_least_once_in_any_string.is_match("hello")
-        );
-        assert!(
-            any_capitalization_of_hello_occurring_at_least_once_in_any_string.is_match("HELLO")
-        );
-        assert!(
-            any_capitalization_of_hello_occurring_at_least_once_in_any_string.is_match("hElLo")
-        );
-        assert!(
-            any_capitalization_of_hello_occurring_at_least_once_in_any_string.is_match("HeLlO")
-        );
-        assert!(
-            any_capitalization_of_hello_occurring_at_least_once_in_any_string.is_match("hELLo")
-        );
-        assert!(
-            any_capitalization_of_hello_occurring_at_least_once_in_any_string
-                .is_match("Hello, world!")
-        );
-        assert!(
-            any_capitalization_of_hello_occurring_at_least_once_in_any_string
-                .is_match("hello, world!")
-        );
-        assert!(
-            any_capitalization_of_hello_occurring_at_least_once_in_any_string
-                .is_match("HELLO, WORLD!")
-        );
-        assert!(
-            any_capitalization_of_hello_occurring_at_least_once_in_any_string
-                .is_match("hElLo, wOrLd!")
-        );
-        assert!(
-            any_capitalization_of_hello_occurring_at_least_once_in_any_string
-                .is_match("HeLlO, WoRlD!")
-        );
-        assert!(
-            any_capitalization_of_hello_occurring_at_least_once_in_any_string
-                .is_match("hELLo, wORlD!")
-        );
+        let hello_any_case = Regex::new(r"(?i).*hello.*").unwrap();
+        assert!(hello_any_case.is_match("Hello"));
+        assert!(hello_any_case.is_match("hello"));
+        assert!(hello_any_case.is_match("HELLO"));
+        assert!(hello_any_case.is_match("hElLo"));
+        assert!(hello_any_case.is_match("HeLlO"));
+        assert!(hello_any_case.is_match("hELLo"));
+        assert!(hello_any_case.is_match("Hello, world!"));
+        assert!(hello_any_case.is_match("hello, world!"));
+        assert!(hello_any_case.is_match("HELLO, WORLD!"));
+        assert!(hello_any_case.is_match("hElLo, wOrLd!"));
+        assert!(hello_any_case.is_match("HeLlO, WoRlD!"));
+        assert!(hello_any_case.is_match("hELLo, wORlD!"));
     }
 
     #[test]
