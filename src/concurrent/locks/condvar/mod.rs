@@ -1,7 +1,9 @@
-use crate::concurrent::locks::mutex::MutexGuard;
-use atomic_wait::{wait, wake_all, wake_one};
 use std::sync::atomic::Ordering::Relaxed;
 use std::sync::atomic::{AtomicU32, AtomicUsize};
+
+use atomic_wait::{wait, wake_all, wake_one};
+
+use crate::concurrent::locks::mutex::MutexGuard;
 
 pub struct Condvar {
     counter: AtomicU32,
@@ -50,12 +52,16 @@ impl Condvar {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use crate::concurrent::locks::Mutex;
     use std::thread;
     use std::time::Duration;
 
-    #[test]
+    use quickcheck_macros::quickcheck;
+
+    use crate::concurrent::locks::Mutex;
+
+    use super::*;
+
+    #[quickcheck]
     fn test_condvar() {
         let mutex = Mutex::new(0);
         let condvar = Condvar::new();
@@ -64,7 +70,7 @@ mod tests {
 
         thread::scope(|s| {
             s.spawn(|| {
-                thread::sleep(Duration::from_secs(1));
+                thread::sleep(Duration::from_nanos(10));
                 *mutex.lock() = 123;
                 condvar.notify_one();
             });
