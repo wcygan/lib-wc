@@ -12,7 +12,7 @@ impl ThreadPool for RayonThreadPool {
         let pool = rayon::ThreadPoolBuilder::new()
             .num_threads(threads)
             .build()
-            .map_err(|e| ThreadPoolError::Message(format!("{}", e)))?;
+            .map_err(|e| ThreadPoolError::Message(format!("{e}")))?;
         Ok(RayonThreadPool {
             inner: pool,
             wg: WaitGroup::new(),
