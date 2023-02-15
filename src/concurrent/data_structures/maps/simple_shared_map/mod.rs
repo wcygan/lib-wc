@@ -15,6 +15,15 @@ struct SharedMapInner<K, V> {
     map: HashMap<K, V>,
 }
 
+impl<K, V> Default for SharedMap<K, V>
+where
+    K: Eq + std::hash::Hash,
+{
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl<K, V> SharedMap<K, V>
 where
     K: Eq + std::hash::Hash,
