@@ -150,6 +150,29 @@ mod tests {
         assert_eq!(map.get(&"foo"), Some(1))
     }
 
+    #[test]
+    fn test_with_map_race() {
+        let map = SharedMap::new();
+
+        thread::spawn({
+            let map = map.clone();
+            move || {
+                let _ = map.with_map(|map| {
+                    map.insert("a", 1);
+                    map.insert("b", 2);
+                });
+            }
+        });
+
+        // Race to see if the writes are visible; both or neither should be visible
+        let _ = map.with_map(|map| {
+            assert!(
+                (map.contains_key("a") && map.contains_key("b"))
+                    || (!map.contains_key("a") && !map.contains_key("b"))
+            );
+        });
+    }
+
     #[tokio::test]
     async fn test_shared_map_with_map_asynchronous_execution() {
         let map = SharedMap::new();

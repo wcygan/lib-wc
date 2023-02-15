@@ -1,1 +1,1 @@
-mod simple_shared_map;
+pub mod simple_shared_map;
