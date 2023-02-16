@@ -7,8 +7,17 @@ The application will shut down when both conditions are met:
 1. There are no active connections
 2. A timeout has elapsed since the last connection was closed
 
-Credit: this example was inspired
-by [a conversation on the Tokio discord](https://discord.com/channels/500028886025895936/500336333500448798/1074602723959377980)
+> *Show me the code!!!*
+
+Look into [main.rs](src/main.rs) for the full example.
+
+### Credit
+
+This example was inspired
+by [a conversation on the Tokio discord](https://discord.com/channels/500028886025895936/500336333500448798/1074602723959377980):
+
+> what's the "correct" way to loop on accept, creating a task for each new connection while also having a shutdown when
+> there are no active/incoming connections for a specific duration?
 
 ## Design
 
