@@ -1,3 +1,4 @@
+//! Implementations of sorting algorithms
 pub use bubble_sort::BubbleSort;
 pub use insertion_sort::InsertionSort;
 pub use quicksort::QuickSort;

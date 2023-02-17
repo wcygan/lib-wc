@@ -1,6 +1,6 @@
 use std::sync::atomic::AtomicUsize;
 
-use lib_wc::concurrent::executors::thread_pool::{RayonThreadPool, ThreadPool, ThreadPoolError};
+use lib_wc::executors::{RayonThreadPool, ThreadPool, ThreadPoolError};
 use std::sync::atomic::Ordering::Acquire;
 
 fn main() -> Result<(), ThreadPoolError> {

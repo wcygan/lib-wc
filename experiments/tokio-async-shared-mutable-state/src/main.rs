@@ -1,4 +1,4 @@
-use lib_wc::concurrent::data_structures::maps::simple_shared_map::SharedMap;
+use lib_wc::sync::ds::BasicSharedMap;
 use tokio::{
     task::spawn,
     time::{sleep, Duration},
@@ -13,7 +13,7 @@ use tokio::{
 /// See https://draft.ryhl.io/blog/shared-mutable-state/ for more details
 #[tokio::main]
 async fn main() {
-    let map = SharedMap::new();
+    let map = BasicSharedMap::new();
     let count = 10_000;
 
     let futures = (0..count).map(|_| {

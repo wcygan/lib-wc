@@ -17,5 +17,5 @@ fn default_config() -> Criterion {
 
 criterion_main!(
     src::algorithms::sorting::bench,
-    src::concurrent::locks::bench,
+    src::concurrent::sync::bench,
 );

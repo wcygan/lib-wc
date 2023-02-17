@@ -1,2 +1,2 @@
-/// source: https://cryptopals.com/
+/// source: `<https://cryptopals.com/>`
 mod set_one;

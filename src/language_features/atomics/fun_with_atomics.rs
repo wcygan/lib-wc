@@ -25,7 +25,7 @@ fn global_id() -> u64 {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::concurrent::executors::thread_pool::*;
+    use crate::concurrent::executors::{available_parallelism, BasicThreadPool, ThreadPool};
     use std::collections::HashSet;
     use std::sync::atomic::AtomicPtr;
     use std::sync::atomic::Ordering::{Acquire, Relaxed, Release, SeqCst};
