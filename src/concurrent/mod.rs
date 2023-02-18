@@ -1,3 +1,6 @@
 pub mod executors;
 pub mod sync;
-pub mod tools;
+
+cfg_dangerous! {
+    pub mod tools;
+}

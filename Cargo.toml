@@ -1,13 +1,23 @@
 [package]
 name = "lib-wc"
-version = "0.1.8"
+version = "0.1.9"
 edition = "2021"
 readme = "README.md"
-description = "cool stuff"
+description = "Will's Programming Toolbox"
+categories = ["concurrent-programming", "asynchronous", "network-programming"]
+keywords = ["io", "async", "non-blocking", "futures", "concurrent", "data-structures"]
 exclude = ["/benches", "/.github", "/fuzz"]
 repository = "https://github.com/wcygan/lib-wc"
 homepage = "https://github.com/wcygan/lib-wc"
 license = "MPL-2.0"
+
+[features]
+
+# The useful parts of the library
+default = []
+
+# experimental unsafe stuff that nobody should use :)
+dangerous = []
 
 [dependencies]
 serde = "1.0.150"
@@ -34,3 +44,7 @@ regex = "1.7.1"
 name = "lib-wc_bench"
 path = "benches/lib.rs"
 harness = false
+
+[package.metadata.docs.rs]
+# Make sure that docs.rs has the documentation for all features
+all-features = true

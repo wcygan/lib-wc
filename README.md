@@ -1,4 +1,4 @@
-# [lib-wc](https://crates.io/crates/lib-wc)
+# [lib-wc](https://docs.rs/lib-wc/)
 
 [<img alt="github" src="https://img.shields.io/badge/github-wcygan/lib--wc-8da0cb?style=for-the-badge&labelColor=555555&logo=github" height="20">](https://github.com/wcygan/lib-wc)
 [<img alt="crates.io" src="https://img.shields.io/crates/v/lib-wc.svg?style=for-the-badge&color=fc8d62&logo=rust" height="20">](https://crates.io/crates/lib-wc)
@@ -15,10 +15,16 @@ Learning how to write a library in Rust by implementing "stuff"
 $ cargo test
 ```
 
+or
+
+```bash
+$ cargo test --all-features
+```
+
 ### Run the benchmarks
 
 ```bash
-$ cargo bench
+$ cargo bench --all-features
 ```
 
 ### Run the fuzz tests

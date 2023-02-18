@@ -34,6 +34,20 @@ pub trait ThreadPool {
     fn shutdown(self);
 }
 
+/// Checks the number of logical cores available to the system.
+///
+/// If the number of logical cores is not available, returns 1.
+///
+/// # Examples
+///
+/// ```
+/// use lib_wc::executors::available_parallelism;
+///
+/// let n = available_parallelism();
+///
+/// assert!(n > 0);
+///
+/// ```
 pub fn available_parallelism() -> usize {
     match thread::available_parallelism() {
         Ok(n) => n.get(),
@@ -41,7 +55,7 @@ pub fn available_parallelism() -> usize {
     }
 }
 
-impl From<std::io::Error> for ThreadPoolError {
+impl From<Error> for ThreadPoolError {
     fn from(e: Error) -> Self {
         ThreadPoolError::IOError(e)
     }

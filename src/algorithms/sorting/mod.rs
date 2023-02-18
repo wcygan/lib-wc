@@ -12,6 +12,21 @@ pub trait Sort<T: Ord> {
     fn sort(arr: &mut [T]);
 }
 
+/// Checks if a slice of data is sorted
+///
+/// # Examples
+///
+/// ```
+/// use lib_wc::sorting::is_sorted;
+///
+/// let mut arr = [1, 2, 3, 4, 5];
+///
+/// assert_eq!(true, is_sorted(&mut arr));
+///
+/// let mut arr = [1, 2, 3, 4, 5, 4];
+///
+/// assert_eq!(false, is_sorted(&mut arr));
+/// ```
 pub fn is_sorted<T: Ord>(arr: &[T]) -> bool {
     for i in 1..arr.len() {
         if arr[i - 1] > arr[i] {

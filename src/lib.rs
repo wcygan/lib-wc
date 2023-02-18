@@ -21,9 +21,16 @@
 pub use algorithms::sorting;
 pub use concurrent::{executors, sync};
 
+#[macro_use]
+#[doc(hidden)]
+pub mod macros;
+
 mod algorithms;
-mod collections;
 mod concurrent;
-mod crates;
-mod exercises;
-mod language_features;
+
+cfg_dangerous! {
+    mod collections;
+    mod crates;
+    mod exercises;
+    mod language_features;
+}
