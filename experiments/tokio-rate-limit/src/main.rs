@@ -48,12 +48,14 @@ async fn run(
 
 async fn listen(mut rx: tokio::sync::mpsc::Receiver<()>, max_qps: f64) {
     let duration = Duration::from_secs_f64(1.0 / max_qps);
-    let mut elapsed = tokio::time::Instant::now();
+    let elapsed = tokio::time::Instant::now();
     let mut interval = tokio::time::interval_at(
         tokio::time::Instant::now() + duration,
         Duration::from_secs_f64(0.5),
     );
+
     let mut count = 0;
+
     loop {
         tokio::select! {
             _ = interval.tick() => {
