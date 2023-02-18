@@ -1,12 +1,13 @@
 use anyhow::Result;
 use clap::Parser;
 use std::sync::Arc;
+use std::time::Duration;
 use tokio::{select, spawn};
 
 #[derive(Parser)]
 struct Cli {
     #[arg(short = 'q', long, value_name = "qps", required = true)]
-    qps: u64,
+    qps: f64,
     #[arg(short = 'c', long, value_name = "concurrency", required = true)]
     concurrency: u64,
 }
@@ -24,7 +25,7 @@ async fn main() -> Result<()> {
         spawn(run(limiter, tx));
     }
 
-    spawn(listen(rx));
+    spawn(listen(rx, cli.qps));
 
     select! {
         _ = tokio::signal::ctrl_c() => {
@@ -45,11 +46,12 @@ async fn run(
     }
 }
 
-async fn listen(mut rx: tokio::sync::mpsc::Receiver<()>) {
+async fn listen(mut rx: tokio::sync::mpsc::Receiver<()>, max_qps: f64) {
+    let duration = Duration::from_secs_f64(1.0 / max_qps);
     let mut elapsed = tokio::time::Instant::now();
     let mut interval = tokio::time::interval_at(
-        tokio::time::Instant::now() + std::time::Duration::from_millis(250),
-        std::time::Duration::from_secs(1),
+        tokio::time::Instant::now() + duration,
+        Duration::from_secs_f64(0.5),
     );
     let mut count = 0;
     loop {
@@ -57,8 +59,6 @@ async fn listen(mut rx: tokio::sync::mpsc::Receiver<()>) {
             _ = interval.tick() => {
                 let qps = count as f64 / elapsed.elapsed().as_secs_f64();
                 println!("QPS: {}", qps);
-                elapsed = tokio::time::Instant::now();
-                count = 0;
             }
             _ = rx.recv() => {
                 count += 1;

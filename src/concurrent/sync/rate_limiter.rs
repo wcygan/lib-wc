@@ -1,4 +1,4 @@
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use std::time::Duration;
 use tokio::sync::Mutex;
 use tokio::time::{interval, Interval};
@@ -12,7 +12,7 @@ use tokio::time::{interval, Interval};
 /// exceeded by a small amount.
 pub struct RateLimiter {
     /// The maximum allowed number of queries per second
-    max_qps: u64,
+    max_qps: f64,
 
     /// The mutex that will be locked when the rate limiter is waiting for the interval to tick.
     ///
@@ -38,18 +38,22 @@ impl RateLimiter {
     ///
     /// #[tokio::main]
     /// async fn main() -> Result<()> {
-    ///     let max_qps = 100;
+    ///     let max_qps = 100.0;
     ///     RateLimiter::new(max_qps)?;
     ///     Ok(())
     /// }
     /// ```
-    pub fn new(max_qps: u64) -> Result<Self> {
-        if max_qps == 0 {
-            return Err(anyhow::anyhow!("Max QPS must be greater than 0"));
+    pub fn new(max_qps: f64) -> Result<Self> {
+        // Make sure that the max QPS is not close to 0
+        if max_qps < 0.000001 {
+            return Err(anyhow!("The max QPS must be greater than 0"));
         }
+
+        let interval_secs_f64 = 1_f64 / max_qps;
+
         Ok(Self {
             max_qps,
-            interval: Mutex::new(interval(Duration::from_secs(1) / max_qps as u32)),
+            interval: Mutex::new(interval(Duration::from_secs_f64(interval_secs_f64))),
         })
     }
 
@@ -64,7 +68,7 @@ impl RateLimiter {
     ///
     /// #[tokio::main]
     /// async fn main() -> Result<()> {
-    ///     let max_qps = 1;
+    ///     let max_qps = 1.0;
     ///     let rate_limiter = RateLimiter::new(max_qps)?;   
     ///
     ///     for _ in 0..1 {
