@@ -4,8 +4,9 @@
 //!
 //! # Concurrency Tools
 //!
-//! * [`executors::RayonThreadPool`], a thread pool which can wait for all tasks to complete before shutting down
+//! * [`sync::RateLimiter`], a client-side rate limiter
 //! * [`sync::ds::BasicSharedMap`], a concurrent map that can be cloned and shared between threads
+//! * [`executors::RayonThreadPool`], a thread pool which can wait for all tasks to complete before shutting down
 //!
 //! # Concurrency Primitives
 //!
