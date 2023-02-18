@@ -12,6 +12,15 @@ pub struct Condvar {
 }
 
 impl Condvar {
+    /// Create a new condition variable
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use lib_wc::sync::Condvar;
+    ///
+    /// let condvar = Condvar::new();
+    /// ```
     pub const fn new() -> Self {
         Self {
             counter: AtomicU32::new(0),
@@ -19,6 +28,45 @@ impl Condvar {
         }
     }
 
+    /// Wait on the condition variable until notified.
+    ///
+    /// This function will atomically unlock the mutex, and then wait for a notification.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    ///  use std::thread;
+    ///  use std::time::Duration;
+    ///  use std::sync::Arc;
+    ///  use lib_wc::sync::{Condvar, Mutex};
+    ///
+    ///  let mutex = Arc::new(Mutex::new(0));
+    ///  let condvar = Condvar::new();    
+    ///  let mutex = Mutex::new(0);
+    ///  let condvar = Condvar::new();
+    ///
+    ///  let mut wakeups = 0;
+    ///
+    ///  thread::scope(|s| {
+    ///    s.spawn(|| {
+    ///       thread::sleep(Duration::from_nanos(10));
+    ///       *mutex.lock() = 123;
+    ///       condvar.notify_one();
+    ///    });
+    ///
+    ///    let mut m = mutex.lock();
+    ///    while *m < 100 {
+    ///      m = condvar.wait(m);
+    ///      wakeups += 1;
+    ///    }
+    ///
+    ///    assert_eq!(*m, 123);
+    ///  });
+    ///
+    ///  // Check that the main thread actually did wait (not busy-loop),
+    ///  // while still allowing for a few spurious wake ups.
+    ///  assert!(wakeups < 10);
+    /// ```
     pub fn wait<'a, T>(&self, mutex_guard: MutexGuard<'a, T>) -> MutexGuard<'a, T> {
         self.num_waiters.fetch_add(1, Relaxed);
         let counter_value = self.counter.load(Relaxed);

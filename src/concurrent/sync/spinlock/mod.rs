@@ -14,6 +14,27 @@ pub struct Guard<'a, T> {
 }
 
 impl<T> SpinLock<T> {
+    /// Creates a new spinlock.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    ///   use lib_wc::sync::SpinLock;
+    ///
+    ///   let spinlock = SpinLock::new(0);
+    ///
+    ///   {
+    ///     let mut guard = spinlock.lock();
+    ///     *guard += 1;
+    ///   } // The guard is dropped here, unlocking the mutex
+    ///
+    ///   {
+    ///     let mut guard = spinlock.lock();
+    ///     *guard += 1;
+    ///   } // The guard is dropped here, unlocking the mutex
+    ///
+    ///   assert_eq!(*spinlock.lock(), 2);
+    /// ```
     pub fn new(value: T) -> Self {
         Self {
             locked: AtomicBool::new(false),
@@ -21,6 +42,28 @@ impl<T> SpinLock<T> {
         }
     }
 
+    /// Acquires a lock on the spinlock, spinning the current thread in a loop until it is able to do so.
+    ///
+    /// This function returns a `Guard` which will release the lock when dropped.
+    ///
+    /// # Examples
+    /// ```
+    ///   use lib_wc::sync::SpinLock;
+    ///
+    ///   let spinlock = SpinLock::new(0);
+    ///
+    ///   {
+    ///     let mut guard = spinlock.lock();
+    ///     *guard += 1;
+    ///   } // The guard is dropped here, unlocking the mutex
+    ///
+    ///   {
+    ///     let mut guard = spinlock.lock();
+    ///     *guard += 1;
+    ///   } // The guard is dropped here, unlocking the mutex
+    ///
+    ///   assert_eq!(*spinlock.lock(), 2);
+    /// ```
     pub fn lock(&self) -> Guard<T> {
         while self.locked.swap(true, Acquire) {
             std::hint::spin_loop();

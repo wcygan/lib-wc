@@ -29,6 +29,14 @@ where
     K: Eq + std::hash::Hash,
 {
     /// Create a new shared map
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use lib_wc::sync::ds::BasicSharedMap;
+    ///
+    /// let m: BasicSharedMap<u32, String> = BasicSharedMap::new();
+    /// ```
     pub fn new() -> Self {
         Self {
             inner: Arc::new(Mutex::new(SharedMapInner {
@@ -38,12 +46,34 @@ where
     }
 
     /// Insert a key-value pair into the map
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use lib_wc::sync::ds::BasicSharedMap;
+    ///
+    /// let m: BasicSharedMap<u32, String> = BasicSharedMap::new();
+    ///
+    /// m.insert(1, "foo".to_string());
+    /// ```
     pub fn insert(&self, key: K, value: V) {
         let mut inner = self.inner.lock().unwrap();
         inner.map.insert(key, value);
     }
 
     /// Get a value from the map
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use lib_wc::sync::ds::BasicSharedMap;    
+    ///
+    /// let m: BasicSharedMap<u32, String> = BasicSharedMap::new();
+    ///
+    /// m.insert(1, "foo".to_string());    
+    ///
+    /// assert_eq!(m.get(&1), Some("foo".to_string()));
+    /// ```
     pub fn get(&self, key: &K) -> Option<V>
     where
         V: Clone,
@@ -53,6 +83,23 @@ where
     }
 
     /// Atomically execute a function with a locked, mutable reference to the map
+    ///
+    /// # Examples
+    ///
+    /// ```
+    ///   use lib_wc::sync::ds::BasicSharedMap;
+    ///
+    ///   let m: BasicSharedMap<u32, String> = BasicSharedMap::new();
+    ///
+    ///   m.with_map(|map| {
+    ///     map.insert(1, "foo".to_string());
+    ///     map.insert(2, "bar".to_string());
+    ///   });
+    ///
+    ///   assert_eq!(m.get(&1), Some("foo".to_string()));
+    ///   assert_eq!(m.get(&2), Some("bar".to_string()));
+    ///
+    /// ```
     pub fn with_map<F, R>(&self, func: F) -> Result<R>
     where
         F: FnOnce(&mut HashMap<K, V>) -> R,

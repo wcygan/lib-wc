@@ -46,6 +46,14 @@ impl<T> Drop for MutexGuard<'_, T> {
 }
 
 impl<T> Mutex<T> {
+    /// Creates a new mutex.
+    ///
+    /// # Examples
+    /// ```
+    /// use lib_wc::sync::Mutex;
+    ///
+    /// let mutex = Mutex::new(0);
+    /// ```
     pub fn new(value: T) -> Self {
         Self {
             state: AtomicU32::new(UNLOCKED),
@@ -53,6 +61,29 @@ impl<T> Mutex<T> {
         }
     }
 
+    /// Acquires a lock on the mutex, blocking the current thread until it is able to do so.
+    ///
+    /// This function returns a `MutexGuard` which will release the lock when dropped.
+    ///
+    /// # Examples
+    /// ```
+    ///   use lib_wc::sync::Mutex;
+    ///
+    ///   let mutex = Mutex::new(0);
+    ///
+    ///   {
+    ///     let mut guard = mutex.lock();
+    ///     *guard += 1;
+    ///   } // The guard is dropped here, unlocking the mutex
+    ///
+    ///   {
+    ///     let mut guard = mutex.lock();
+    ///     *guard += 1;
+    ///   } // The guard is dropped here, unlocking the mutex
+    ///
+    ///   assert_eq!(*mutex.lock(), 2);
+    ///
+    /// ```
     #[inline]
     pub fn lock(&self) -> MutexGuard<T> {
         if self

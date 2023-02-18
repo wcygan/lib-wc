@@ -8,6 +8,14 @@ pub struct RayonThreadPool {
 }
 
 impl ThreadPool for RayonThreadPool {
+    /// Create a new thread pool with the given number of threads
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use lib_wc::executors::{RayonThreadPool, ThreadPool};
+    /// let tp = RayonThreadPool::new(4).unwrap();
+    /// ```
     fn new(threads: usize) -> Result<Self> {
         let pool = rayon::ThreadPoolBuilder::new()
             .num_threads(threads)
@@ -19,6 +27,19 @@ impl ThreadPool for RayonThreadPool {
         })
     }
 
+    /// Spawn a new task on the thread pool
+    ///
+    /// # Examples
+    ///
+    /// ```
+    ///   use lib_wc::executors::{RayonThreadPool, ThreadPool};
+    ///
+    ///   let tp = RayonThreadPool::new(4).unwrap();
+    ///
+    ///   tp.spawn(|| {
+    ///     println!("Hello from a thread!");
+    ///   });
+    /// ```
     fn spawn<F>(&self, job: F)
     where
         F: FnOnce() + Send + 'static,
@@ -31,6 +52,29 @@ impl ThreadPool for RayonThreadPool {
         });
     }
 
+    /// Wait for all currently running tasks to complete
+    ///
+    /// # Examples
+    ///
+    /// ```
+    ///   use lib_wc::executors::{RayonThreadPool, ThreadPool};    
+    ///   use std::sync::atomic::{AtomicUsize, Ordering};
+    ///
+    ///   static ATOMIC_COUNTER: AtomicUsize = AtomicUsize::new(0);
+    ///
+    ///   let tp = RayonThreadPool::new(4).unwrap();
+    ///
+    ///   for _ in 0..100 {
+    ///     tp.spawn(|| {
+    ///       ATOMIC_COUNTER.fetch_add(1, Ordering::Acquire);
+    ///     });
+    ///   }
+    ///
+    ///   tp.shutdown();
+    ///
+    ///   assert_eq!(ATOMIC_COUNTER.load(Ordering::Relaxed), 100);
+    ///
+    /// ```
     fn shutdown(self) {
         self.wg.wait();
     }
