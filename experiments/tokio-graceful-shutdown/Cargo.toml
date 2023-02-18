@@ -4,4 +4,5 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+lib-wc = { path = "../..", features = ["default"] }
 tokio = { version = "1.25.0", features = ["full"] }
