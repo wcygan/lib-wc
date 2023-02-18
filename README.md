@@ -15,10 +15,16 @@ Learning how to write a library in Rust by implementing "stuff"
 $ cargo test
 ```
 
+or
+
+```bash
+$ cargo test --all-features
+```
+
 ### Run the benchmarks
 
 ```bash
-$ cargo bench
+$ cargo bench --all-features
 ```
 
 ### Run the fuzz tests
