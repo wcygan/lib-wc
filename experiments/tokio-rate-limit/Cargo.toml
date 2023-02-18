@@ -1,0 +1,10 @@
+[package]
+name = "tokio-rate-limit"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+tokio = { version = "1.25.0", features = ["full"] }
+lib-wc = { path = "../.." }
+clap = { version = "4.1.6", features = ["derive"] }
+anyhow = "1.0.69"
