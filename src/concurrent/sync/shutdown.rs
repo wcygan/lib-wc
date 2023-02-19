@@ -62,26 +62,38 @@ impl Shutdown {
     ///
     /// ```
     /// use tokio::task::spawn;
-    /// use tokio::sync::broadcast;
+    /// use tokio::sync::{broadcast, mpsc};
     /// use lib_wc::sync::Shutdown;
+    ///
+    /// async fn task(shutdown: &mut Shutdown, _shutdown_complete: mpsc::Sender<()>) {
+    ///     shutdown.recv().await;
+    ///     assert!(shutdown.is_shutdown());
+    /// }
     ///
     /// #[tokio::main]
     /// async fn main() {
-    ///  let (tx, rx) = broadcast::channel(1);
-    ///
-    ///  let mut shutdown = Shutdown::new(rx);
-    ///
+    ///  let (notify_shutdown, _) = broadcast::channel::<()>(1);
+    ///  let (shutdown_complete_tx, mut shutdown_complete_rx) = mpsc::channel::<()>(1);
+    ///  
+    ///  // Create a shutdown signal
+    ///  let mut shutdown = Shutdown::new(notify_shutdown.subscribe());
     ///  assert!(!shutdown.is_shutdown());
+    ///  
+    ///  // Spawn a task
+    ///  let t = spawn({
+    ///   let shutdown_complete_tx = shutdown_complete_tx.clone();
+    ///   async move { task(&mut shutdown, shutdown_complete_tx).await }
+    /// });
     ///
-    ///  let t = spawn(async move {
-    ///     shutdown.recv().await;
-    ///     assert!(shutdown.is_shutdown());
-    ///  });
+    ///  // Notify all tasks that shutdown has started
+    ///  drop(notify_shutdown);
     ///
-    ///  // Signal shutdown
-    ///  drop(tx);
+    ///  // Drop the local shutdown complete handle so that `shutdown_complete_rx.recv().await`
+    ///  // will return when all remaining `shutdown_complete_tx` handles have been dropped
+    ///  drop(shutdown_complete_tx);
     ///
-    ///  t.await;
+    ///  // Wait for all tasks to finish
+    ///  let _ = shutdown_complete_rx.recv().await;
     /// }
     /// ```
     pub async fn recv(&mut self) {
