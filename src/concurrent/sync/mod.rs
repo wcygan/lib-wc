@@ -2,7 +2,7 @@
 
 pub use rate_limiter::RateLimiter;
 pub mod ds;
-pub use shutdown::Shutdown;
+pub use shutdown::{ShutdownController, ShutdownListener};
 mod rate_limiter;
 mod shutdown;
 

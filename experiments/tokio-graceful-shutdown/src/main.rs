@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use lib_wc::sync::Shutdown;
+use lib_wc::sync::ShutdownListener;
 use tokio::select;
 use tokio::signal::ctrl_c;
 use tokio::sync::{broadcast, mpsc};
@@ -26,7 +26,7 @@ async fn main() {
 
     // Spawn 10 tens
     for i in 0..10 {
-        let shutdown = Shutdown::new(notify_shutdown.subscribe());
+        let shutdown = ShutdownListener::new(notify_shutdown.subscribe());
         let shutdown_complete_tx = shutdown_complete_tx.clone();
         tokio::spawn(async move {
             let mut task = Task::new(i, shutdown, shutdown_complete_tx);
@@ -69,14 +69,18 @@ struct Task {
     id: u32,
 
     /// Shutdown signal that is used to signal that the task should stop
-    shutdown: Shutdown,
+    shutdown: ShutdownListener,
 
     /// Implicitly used to signal that the task has finished by being dropped
     _shutdown_complete_tx: mpsc::Sender<()>,
 }
 
 impl Task {
-    pub fn new(id: u32, shutdown: Shutdown, _shutdown_complete_tx: mpsc::Sender<()>) -> Self {
+    pub fn new(
+        id: u32,
+        shutdown: ShutdownListener,
+        _shutdown_complete_tx: mpsc::Sender<()>,
+    ) -> Self {
         Self {
             id,
             shutdown,
