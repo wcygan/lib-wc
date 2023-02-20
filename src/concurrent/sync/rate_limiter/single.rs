@@ -66,20 +66,33 @@ impl RateLimiter {
     ///    Ok(())
     /// }
     /// ```
-    pub async fn fff(&self) -> Result<()> {
-        let mut interval = self.interval.lock().await;
-        interval.tick().await;
-        Ok(())
-    }
+    // pub async fn fff(&self) -> Result<()> {
+    //     let mut interval = self.interval.lock().await;
+    //     interval.tick().await;
+    //     Ok(())
+    // }
 
     pub async fn throttle<Fut, F, T>(&self, f: F) -> Result<T>
     where
         Fut: std::future::Future<Output = T>,
         F: FnOnce() -> Fut,
     {
+        self.wait().await;
+        Ok(f().await)
+    }
+
+    pub async fn throttle_mut<Fut, F, T>(&self, mut f: F) -> Result<T>
+    where
+        Fut: std::future::Future<Output = T>,
+        F: FnMut() -> Fut,
+    {
+        self.wait().await;
+        Ok(f().await)
+    }
+
+    async fn wait(&self) {
         let mut interval = self.interval.lock().await;
         interval.tick().await;
-        Ok(f().await)
     }
 }
 

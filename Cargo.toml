@@ -33,6 +33,7 @@ tokio = { version = "1.25.0", features = ["full"] }
 once_cell = "1.17.1"
 dashmap = "5.4.0"
 tokio-retry = "0.3.0"
+futures = "0.3.26"
 
 [dev-dependencies]
 criterion = "0.4.0"
@@ -42,7 +43,6 @@ rand_chacha = "0.3.1"
 rand_core = "0.6.4"
 rand = "0.8.5"
 regex = "1.7.1"
-futures = "0.3.26"
 
 [[bench]]
 name = "lib-wc_bench"
