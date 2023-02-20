@@ -261,6 +261,7 @@ dependencies = [
  "bincode",
  "crossbeam",
  "crossbeam-epoch",
+ "crossbeam-utils",
  "dashmap",
  "futures",
  "log",

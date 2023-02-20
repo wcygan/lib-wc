@@ -1,5 +1,6 @@
 use crate::sync::RateLimiter;
 use anyhow::Result;
+use crossbeam_utils::Backoff;
 use std::hash::Hash;
 use std::time::Duration;
 
@@ -20,113 +21,56 @@ impl<K: Eq + Hash + Clone> MultiRateLimiter<K> {
         }
     }
 
-    /// Waits for the rate limiter to allow the client to send another query.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use lib_wc::sync::MultiRateLimiter;
-    /// use std::time::Duration;
-    /// use std::sync::Arc;
-    ///
-    /// #[tokio::main]
-    /// async fn main() {
-    ///    let rate_limiter: Arc<MultiRateLimiter<u32>> = Arc::new(MultiRateLimiter::new(Duration::from_millis(50)));
-    ///
-    ///    futures::future::join_all(
-    ///       (0..10).map(|x| {
-    ///         let rate_limiter = rate_limiter.clone();
-    ///         tokio::spawn(async move {
-    ///          rate_limiter.throttle(x, || async {Ok::<(), anyhow::Error>(())}).await;
-    ///           Ok::<(), anyhow::Error>(())
-    ///         })
-    ///      })
-    ///    ).await;
-    /// }
-    /// ```    
-    // async fn acquire(&self, key: K) -> Result<()> {
-    //     let retry_strategy = ExponentialBackoff::from_millis(10).map(jitter);
-    //
-    //     Retry::spawn(retry_strategy, || async {
-    //         self.acquire_inner(key.clone()).await
-    //     })
-    //     .await
-    // }
-
-    /// Acquires the rate limiter for the given key.
-    ///
-    /// If the key does not exist, it is created.
-    ///
-    /// [`dashmap::DashMap::try_entry`] is used to avoid locking the entire map, so this
-    /// operation is fallible and may need to be retried.
-    // async fn acquire_inner(&self, key: K) -> Result<()> {
-    //     match self.rate_limiters.try_entry(key.clone()) {
-    //         Some(entry) => {
-    //             let rate_limiter = entry.or_insert_with(|| RateLimiter::new(self.period));
-    //             return rate_limiter.fff().await;
-    //         }
-    //         None => {}
-    //     }
-    //     Ok(())
-    // }
-
     pub async fn throttle<Fut, F, T>(&self, key: K, f: F) -> Result<T>
     where
         Fut: std::future::Future<Output = T>,
         F: FnOnce() -> Fut,
     {
+        let mut retries = 10;
+        let backoff = Backoff::new();
+
         loop {
             match self.rate_limiters.try_entry(key.clone()) {
                 Some(entry) => {
                     let rate_limiter = entry.or_insert_with(|| RateLimiter::new(self.period));
                     return rate_limiter.value().throttle(f).await;
                 }
-                None => {}
+                None => {
+                    retries -= 1;
+                    if retries == 0 {
+                        return Err(anyhow::anyhow!("Failed to acquire rate limiter"));
+                    }
+                    backoff.spin();
+                }
             }
         }
     }
-    //
-    // async fn throttle_inner<Fut, F, T>(&self, key: K, f: &mut F) -> Result<T>
-    // where
-    //     Fut: std::future::Future<Output = T>,
-    //     F: FnMut() -> Fut,
-    // {
-    //     match self.rate_limiters.try_entry(key.clone()) {
-    //         Some(entry) => {
-    //             let rate_limiter = entry.or_insert_with(|| RateLimiter::new(self.period));
-    //             rate_limiter.value().throttle(f).await
-    //         }
-    //         None => Err(anyhow::anyhow!("Could not acquire rate limiter")),
-    //     }
-    // }
 
-    // Take in an FnMut instead of an FnOnce so that we can retry the operation
-    // pub async fn throttle<Fut, F, T>(&self, key: K, f: F) -> Result<T>
-    // where
-    //     Fut: std::future::Future<Output = Result<T>>,
-    //     F: FnOnce() -> Fut,
-    // {
-    //     let retry_strategy = ExponentialBackoff::from_millis(10).map(jitter);
-    //
-    //     Retry::spawn(retry_strategy, || async {
-    //         self.throttle_inner(key.clone(), f).await
-    //     })
-    //     .await
-    // }
-    //
-    // async fn throttle_inner<Fut, F, T>(&self, key: K, mut f: F) -> Result<T>
-    // where
-    //     Fut: std::future::Future<Output = Result<T>>,
-    //     F: FnOnce() -> Fut,
-    // {
-    //     match self.rate_limiters.try_entry(key.clone()) {
-    //         Some(entry) => {
-    //             let rate_limiter = entry.or_insert_with(|| RateLimiter::new(self.period));
-    //             rate_limiter.value().throttle(f).await?
-    //         }
-    //         None => Err(anyhow::anyhow!("Could not acquire rate limiter")),
-    //     }
-    // }
+    pub async fn throttle_mut<Fut, F, T>(&self, key: K, f: F) -> Result<T>
+    where
+        Fut: std::future::Future<Output = T>,
+        F: FnMut() -> Fut,
+    {
+        let mut retries = 10;
+        let backoff = Backoff::new();
+
+        loop {
+            match self.rate_limiters.try_entry(key.clone()) {
+                Some(entry) => {
+                    let rate_limiter = entry.or_insert_with(|| RateLimiter::new(self.period));
+                    return rate_limiter.value().throttle_mut(f).await;
+                }
+                None => {
+                    if retries == 0 {
+                        return Err(anyhow::anyhow!("Failed to acquire rate limiter"));
+                    }
+
+                    retries -= 1;
+                    backoff.spin();
+                }
+            }
+        }
+    }
 }
 
 // #[cfg(test)]
