@@ -1,11 +1,13 @@
 use crate::sync::backoff::Backoff;
 use crate::sync::RateLimiter;
 use anyhow::Result;
-
 use std::hash::Hash;
 use std::time::Duration;
 
-/// A [`MultiRateLimiter`] that can be used to throttle processing on multiple keys.
+/// [`MultiRateLimiter`] enables key-based rate limiting, where each key has its own [`RateLimiter`].
+///
+/// This behavior is useful when you want to throttle a set of keys independently, for example
+/// you may have a web crawler that wants to throttle its requests to each domain independently.
 ///
 /// # Examples
 ///
@@ -43,10 +45,15 @@ use std::time::Duration;
 ///    Ok(())
 /// }
 pub struct MultiRateLimiter<K> {
-    /// The period that each key is allowed to send a query
+    /// The period for each [`RateLimiter`] associated with a particular key
     period: Duration,
 
     /// The key-specific [`RateLimiter`]s
+    ///
+    /// The [`RateLimiter`]s are stored in a [`dashmap::DashMap`], which is a concurrent hash map.
+    /// Note that keys may map to the same shard within the [`dashmap::DashMap`], so you may experience
+    /// increase latency due to the spin-looping nature of [MultiRateLimiter::throttle] combined
+    /// with the fallibility of [`dashmap::DashMap::try_entry`].
     rate_limiters: dashmap::DashMap<K, RateLimiter>,
 }
 
@@ -59,42 +66,22 @@ impl<K: Eq + Hash + Clone> MultiRateLimiter<K> {
         }
     }
 
-    /// Throttles the execution of `f` for the given `key`.
+    /// Throttles the execution of a function based on a key.
+    /// Throttling is key-specific, so multiple keys can be throttled independently.
+    ///
+    /// Uses an exponential backoff to wait for [`dashmap::DashMap`] shards to become available.
     ///
     /// # Examples
     ///
     /// ```
     /// use lib_wc::sync::MultiRateLimiter;
     /// use anyhow::Result;
-    /// use std::time::{Duration, Instant};
     /// use std::sync::Arc;
-    /// use futures::future::join_all;
-    /// use std::sync::atomic::AtomicUsize;
-    /// use std::sync::atomic::Ordering::SeqCst;
     ///
-    /// #[tokio::main]
-    /// async fn main() -> Result<()> {
-    ///    let rate_limiter = Arc::new(MultiRateLimiter::new(Duration::from_millis(50)));
-    ///    static COUNT: AtomicUsize = AtomicUsize::new(0);
-    ///    let start = Instant::now();
+    /// async fn do_work() { /* some computation */ }
     ///
-    ///    // Spawn 10 tasks, each with a different key
-    ///    join_all(
-    ///       (0..10).map(|key| {
-    ///         let rate_limiter = rate_limiter.clone();
-    ///        tokio::spawn(async move {
-    ///          rate_limiter.throttle(key % 5, || async {
-    ///            COUNT.fetch_add(1, SeqCst);
-    ///          }).await;
-    ///       })
-    ///    })).await;
-    ///
-    ///    // The rate limiter should have throttled the first 5 keys to 1 per 50ms
-    ///    assert!(start.elapsed().as_millis() >= 49);
-    ///
-    ///    // All the keys should have been processed
-    ///    assert_eq!(COUNT.load(SeqCst), 10);
-    ///    Ok(())
+    /// async fn throttle_by_key(the_key: u32, limiter: Arc<MultiRateLimiter<u32>>) -> Result<()> {
+    ///    limiter.throttle(the_key, || do_work()).await
     /// }
     pub async fn throttle<Fut, F, T>(&self, key: K, f: F) -> Result<T>
     where

@@ -3,7 +3,36 @@ use std::time::Duration;
 use tokio::sync::Mutex;
 use tokio::time::{interval, Interval};
 
-/// TODO
+/// [`RateLimiter`] is a tool which can control the rate at which prossing happens.
+///
+/// # Examples
+///
+/// ```
+/// use std::time::{Duration, Instant};
+/// use lib_wc::sync::RateLimiter;
+/// use std::sync::atomic::{AtomicUsize, Ordering::SeqCst};
+///
+/// static PERIOD: Duration = Duration::from_millis(10);
+/// static COUNT: AtomicUsize = AtomicUsize::new(0);
+///
+/// async fn do_work() { COUNT.fetch_add(1, SeqCst); }
+///
+/// #[tokio::main]
+/// async fn main() {
+///    let rate_limiter = RateLimiter::new(PERIOD);
+///    let start = Instant::now();
+///    
+///    for _ in 0..10 {
+///       rate_limiter.throttle(|| do_work()).await;
+///    }
+///
+///    // The first call to throttle should have returned immediately, but the remaining
+///    // calls should have waited for the interval to tick.
+///    assert!(start.elapsed().as_millis() > 89);
+///
+///    // All 10 calls to do_work should be finished.
+///    assert_eq!(COUNT.load(SeqCst), 10);
+/// }
 pub struct RateLimiter {
     /// The mutex that will be locked when the rate limiter is waiting for the interval to tick.
     ///
@@ -38,7 +67,20 @@ impl RateLimiter {
         }
     }
 
-    /// TODO
+    /// Throttles the execution of a function.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use lib_wc::sync::RateLimiter;
+    /// use anyhow::Result;
+    /// use std::sync::Arc;
+    ///
+    /// async fn do_work() { /* some computation */ }
+    ///
+    /// async fn do_throttle(limiter: Arc<RateLimiter>) -> Result<()> {
+    ///    limiter.throttle(|| do_work()).await
+    /// }
     pub async fn throttle<Fut, F, T>(&self, f: F) -> Result<T>
     where
         Fut: std::future::Future<Output = T>,
@@ -48,6 +90,12 @@ impl RateLimiter {
         Ok(f().await)
     }
 
+    /// Waits for the interval to tick.
+    ///
+    /// This is the building block for the throttle function. It works by allowing only one task to
+    /// access the interval at a time. The first task to access the interval will tick it and then
+    /// release the lock. The next task to access the interval will tick it and then release the
+    /// lock.
     async fn wait(&self) {
         let mut interval = self.interval.lock().await;
         interval.tick().await;
