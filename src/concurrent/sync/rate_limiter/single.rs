@@ -3,13 +3,7 @@ use std::time::Duration;
 use tokio::sync::Mutex;
 use tokio::time::{interval, Interval};
 
-/// A client-side rate limiter. This is useful for limiting the number of queries sent to a server
-/// from a single client. For example, it is useful inside of a web crawler to limit the number of
-/// requests sent by the crawler.
-///
-/// The rate limit is a "best effort" rate limit. It is not guaranteed that the rate limit will be
-/// exactly the specified number of queries per second. It is possible that the rate limit will be
-/// exceeded by a small amount.
+/// TODO
 pub struct RateLimiter {
     /// The mutex that will be locked when the rate limiter is waiting for the interval to tick.
     ///
@@ -44,49 +38,14 @@ impl RateLimiter {
         }
     }
 
-    /// Waits for the rate limiter to allow the client to send another query.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use tokio::sync::Mutex;
-    /// use anyhow::Result;
-    /// use std::time::Duration;
-    /// use lib_wc::sync::RateLimiter;
-    ///
-    /// #[tokio::main]
-    /// async fn main() -> Result<()> {
-    ///     let rate_limiter = RateLimiter::new(Duration::from_millis(10));   
-    ///
-    ///     for _ in 0..1 {
-    ///        rate_limiter.fff().await?;
-    ///        // Send a query to a server
-    ///     }
-    ///
-    ///    Ok(())
-    /// }
-    /// ```
-    // pub async fn fff(&self) -> Result<()> {
-    //     let mut interval = self.interval.lock().await;
-    //     interval.tick().await;
-    //     Ok(())
-    // }
-
+    /// TODO
     pub async fn throttle<Fut, F, T>(&self, f: F) -> Result<T>
     where
         Fut: std::future::Future<Output = T>,
         F: FnOnce() -> Fut,
     {
         self.wait().await;
-        Ok(f().await)
-    }
-
-    pub async fn throttle_mut<Fut, F, T>(&self, mut f: F) -> Result<T>
-    where
-        Fut: std::future::Future<Output = T>,
-        F: FnMut() -> Fut,
-    {
-        self.wait().await;
+        println!("current time is {:?}", std::time::Instant::now());
         Ok(f().await)
     }
 
@@ -99,28 +58,30 @@ impl RateLimiter {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::sync::Arc;
     use std::time::Instant;
 
     #[tokio::test]
-    async fn test_rate_limiter() -> Result<()> {
+    async fn test_throttle_empty() -> Result<()> {
         let rate_limiter = RateLimiter::new(Duration::from_millis(10));
-
         let start = Instant::now();
-        for _ in 0..10 {
-            rate_limiter.fff().await?;
-        }
-        let end = start.elapsed().as_millis();
 
+        for _ in 0..10 {
+            rate_limiter.throttle(|| async {}).await?;
+        }
+
+        let end = start.elapsed().as_millis();
         assert!(end >= 89);
         Ok(())
     }
 
     #[tokio::test]
-    async fn test_do_with_rate_limit() -> Result<()> {
-        async fn hello() {}
-
+    async fn test_throttle_fn() -> Result<()> {
         let rate_limiter = RateLimiter::new(Duration::from_millis(10));
-        let current_time = Instant::now();
+        async fn hello() {
+            println!("Hello, world!")
+        }
+
         let start = Instant::now();
         for _ in 0..10 {
             rate_limiter.throttle(hello).await?;
@@ -132,16 +93,74 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_throttle_fn_that_does_nothing() -> Result<()> {
-        let rate_limiter = RateLimiter::new(Duration::from_millis(10));
+    async fn test_throttle_with_mutable_data() -> Result<()> {
+        let rate_limiter = Arc::new(RateLimiter::new(Duration::from_millis(10)));
+        let data = Arc::new(Mutex::new(0));
+
+        async fn hello(data: Arc<Mutex<i32>>) {
+            let mut data = data.lock().await;
+            *data += 1;
+        }
 
         let start = Instant::now();
-        for _ in 0..10 {
-            rate_limiter.throttle(|| async {}).await?;
-        }
-        let end = start.elapsed().as_millis();
+        let futs = (0..10).map(|_| {
+            let data = data.clone();
+            let rate_limiter = rate_limiter.clone();
+            tokio::spawn(async move {
+                rate_limiter.throttle(|| hello(data.clone())).await?;
+                Ok::<(), anyhow::Error>(())
+            })
+        });
 
+        for fut in futs {
+            fut.await??;
+        }
+
+        let end = start.elapsed().as_millis();
+        let data = data.lock().await;
         assert!(end >= 89);
+        assert_eq!(*data, 10);
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_throttle_fn_mut_with_mutable_data_2() -> Result<()> {
+        let data = Arc::new(Mutex::new(Data { data: 0 }));
+        let rate_limiter = Arc::new(RateLimiter::new(Duration::from_millis(10)));
+
+        struct Data {
+            data: i32,
+        }
+
+        impl Data {
+            async fn increment(&mut self) {
+                self.data += 1;
+            }
+        }
+
+        async fn hello(data: Arc<Mutex<Data>>) {
+            let mut data = data.lock().await;
+            data.increment().await;
+        }
+
+        let start = Instant::now();
+        let futs = (0..10).map(|_| {
+            let data = data.clone();
+            let rate_limiter = rate_limiter.clone();
+            tokio::spawn(async move {
+                rate_limiter.throttle(|| hello(data.clone())).await?;
+                Ok::<(), anyhow::Error>(())
+            })
+        });
+
+        for fut in futs {
+            fut.await??;
+        }
+
+        let end = start.elapsed().as_millis();
+        let data = data.lock().await;
+        assert!(end >= 89);
+        assert_eq!(data.data, 10);
         Ok(())
     }
 }
