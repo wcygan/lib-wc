@@ -3,7 +3,7 @@ use std::time::Duration;
 use tokio::sync::Mutex;
 use tokio::time::{interval, Interval};
 
-/// [`RateLimiter`] is a tool which can control the rate at which prossing happens.
+/// [`RateLimiter`] is a tool which can control the rate at which processing happens.
 ///
 /// # Examples
 ///
