@@ -1,22 +1,18 @@
 [package]
 name = "lib-wc"
-version = "0.1.9"
+version = "0.1.10"
 edition = "2021"
 readme = "README.md"
 description = "Will's Programming Toolbox"
-categories = ["concurrent-programming", "asynchronous", "network-programming"]
-keywords = ["async", "non-blocking", "futures", "concurrent", "data-structures"]
+categories = ["async", "concurrent-programming", "asynchronous-programming"]
+keywords = ["async", "concurrent", "non-blocking", "futures", "data-structures"]
 exclude = ["/benches", "/.github", "/fuzz"]
 repository = "https://github.com/wcygan/lib-wc"
 homepage = "https://github.com/wcygan/lib-wc"
 license = "MPL-2.0"
 
 [features]
-
-# The useful parts of the library
-default = []
-
-# experimental unsafe stuff that nobody should use :)
+# use at your own risk :)
 dangerous = []
 
 [dependencies]
@@ -30,6 +26,9 @@ crossbeam-epoch = "0.9.13"
 bincode = "1.3.3"
 anyhow = "1.0.69"
 tokio = { version = "1.25.0", features = ["full"] }
+dashmap = "5.4.0"
+futures = "0.3.26"
+rand = "0.8.5"
 
 [dev-dependencies]
 criterion = "0.4.0"
@@ -37,7 +36,6 @@ quickcheck = "1"
 quickcheck_macros = "1"
 rand_chacha = "0.3.1"
 rand_core = "0.6.4"
-rand = "0.8.5"
 regex = "1.7.1"
 
 [[bench]]
