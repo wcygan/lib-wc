@@ -1,4 +1,4 @@
-use anyhow::{anyhow, Result};
+use anyhow::Result;
 use std::time::Duration;
 use tokio::sync::Mutex;
 use tokio::time::{interval, Interval};
@@ -59,16 +59,76 @@ impl RateLimiter {
     ///     let rate_limiter = RateLimiter::new(Duration::from_millis(10));   
     ///
     ///     for _ in 0..1 {
-    ///        rate_limiter.acquire().await?;
+    ///        rate_limiter.fff().await?;
     ///        // Send a query to a server
     ///     }
     ///
     ///    Ok(())
     /// }
     /// ```
-    pub async fn acquire(&self) -> Result<()> {
+    pub async fn fff(&self) -> Result<()> {
         let mut interval = self.interval.lock().await;
         interval.tick().await;
+        Ok(())
+    }
+
+    pub async fn throttle<Fut, F, T>(&self, f: F) -> Result<T>
+    where
+        Fut: std::future::Future<Output = T>,
+        F: FnOnce() -> Fut,
+    {
+        let mut interval = self.interval.lock().await;
+        interval.tick().await;
+        Ok(f().await)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::time::Instant;
+
+    #[tokio::test]
+    async fn test_rate_limiter() -> Result<()> {
+        let rate_limiter = RateLimiter::new(Duration::from_millis(10));
+
+        let start = Instant::now();
+        for _ in 0..10 {
+            rate_limiter.fff().await?;
+        }
+        let end = start.elapsed().as_millis();
+
+        assert!(end >= 89);
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_do_with_rate_limit() -> Result<()> {
+        async fn hello() {}
+
+        let rate_limiter = RateLimiter::new(Duration::from_millis(10));
+        let current_time = Instant::now();
+        let start = Instant::now();
+        for _ in 0..10 {
+            rate_limiter.throttle(hello).await?;
+        }
+        let end = start.elapsed().as_millis();
+
+        assert!(end >= 89);
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_throttle_fn_that_does_nothing() -> Result<()> {
+        let rate_limiter = RateLimiter::new(Duration::from_millis(10));
+
+        let start = Instant::now();
+        for _ in 0..10 {
+            rate_limiter.throttle(|| async {}).await?;
+        }
+        let end = start.elapsed().as_millis();
+
+        assert!(end >= 89);
         Ok(())
     }
 }
