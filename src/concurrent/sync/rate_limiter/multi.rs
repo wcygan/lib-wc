@@ -1,6 +1,5 @@
 use crate::sync::backoff::Backoff;
 use crate::sync::RateLimiter;
-use anyhow::Result;
 use std::hash::Hash;
 use std::time::Duration;
 
@@ -80,10 +79,10 @@ impl<K: Eq + Hash + Clone> MultiRateLimiter<K> {
     ///
     /// async fn do_work() { /* some computation */ }
     ///
-    /// async fn throttle_by_key(the_key: u32, limiter: Arc<MultiRateLimiter<u32>>) -> Result<()> {
+    /// async fn throttle_by_key(the_key: u32, limiter: Arc<MultiRateLimiter<u32>>) {
     ///    limiter.throttle(the_key, || do_work()).await
     /// }
-    pub async fn throttle<Fut, F, T>(&self, key: K, f: F) -> Result<T>
+    pub async fn throttle<Fut, F, T>(&self, key: K, f: F) -> T
     where
         Fut: std::future::Future<Output = T>,
         F: FnOnce() -> Fut,
@@ -104,6 +103,7 @@ impl<K: Eq + Hash + Clone> MultiRateLimiter<K> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use anyhow::Result;
     use futures::future::join_all;
     use std::ops::Mul;
     use std::sync::atomic::AtomicUsize;
@@ -122,7 +122,7 @@ mod tests {
                 .throttle("key", || async {
                     COUNT.fetch_add(1, SeqCst);
                 })
-                .await?;
+                .await;
         }
 
         assert_eq!(COUNT.load(SeqCst), 10);
@@ -142,7 +142,7 @@ mod tests {
                 .throttle(k, || async {
                     COUNT.fetch_add(1, SeqCst);
                 })
-                .await?;
+                .await;
         }
 
         assert_eq!(COUNT.load(SeqCst), 10);
@@ -163,7 +163,7 @@ mod tests {
                     .throttle("key", || async {
                         COUNT.fetch_add(1, SeqCst);
                     })
-                    .await?;
+                    .await;
                 Ok::<(), anyhow::Error>(())
             })
         }))
@@ -188,7 +188,7 @@ mod tests {
                     .throttle(x, || async {
                         COUNT.fetch_add(1, SeqCst);
                     })
-                    .await?;
+                    .await;
                 Ok::<(), anyhow::Error>(())
             })
         }))
@@ -216,7 +216,7 @@ mod tests {
                     .throttle(target, || async {
                         COUNT.fetch_add(1, SeqCst);
                     })
-                    .await?;
+                    .await;
                 Ok::<(), anyhow::Error>(())
             })
         }))
