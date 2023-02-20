@@ -254,24 +254,21 @@ dependencies = [
 
 [[package]]
 name = "lib-wc"
-version = "0.1.9"
+version = "0.1.10"
 dependencies = [
  "anyhow",
  "atomic-wait",
  "bincode",
  "crossbeam",
  "crossbeam-epoch",
- "crossbeam-utils",
  "dashmap",
  "futures",
  "log",
- "once_cell",
  "rand",
  "rayon",
  "serde",
  "serde_derive",
  "tokio",
- "tokio-retry",
 ]
 
 [[package]]
@@ -363,26 +360,6 @@ dependencies = [
  "redox_syscall",
  "smallvec",
  "windows-sys 0.45.0",
-]
-
-[[package]]
-name = "pin-project"
-version = "1.0.12"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ad29a609b6bcd67fee905812e544992d216af9d755757c05ed2d0e15a74c6ecc"
-dependencies = [
- "pin-project-internal",
-]
-
-[[package]]
-name = "pin-project-internal"
-version = "1.0.12"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "069bdb1e05adc7a8990dce9cc75370895fbe4e3d58b9b73bf1aee56359344a55"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn",
 ]
 
 [[package]]
@@ -587,17 +564,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn",
-]
-
-[[package]]
-name = "tokio-retry"
-version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7f57eb36ecbe0fc510036adff84824dd3c24bb781e21bfa67b69d556aa85214f"
-dependencies = [
- "pin-project",
- "rand",
- "tokio",
 ]
 
 [[package]]

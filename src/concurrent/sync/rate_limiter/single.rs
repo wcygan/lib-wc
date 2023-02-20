@@ -1,4 +1,3 @@
-use anyhow::Result;
 use std::time::Duration;
 use tokio::sync::Mutex;
 use tokio::time::{interval, Interval};
@@ -78,16 +77,16 @@ impl RateLimiter {
     ///
     /// async fn do_work() { /* some computation */ }
     ///
-    /// async fn do_throttle(limiter: Arc<RateLimiter>) -> Result<()> {
+    /// async fn do_throttle(limiter: Arc<RateLimiter>) {
     ///    limiter.throttle(|| do_work()).await
     /// }
-    pub async fn throttle<Fut, F, T>(&self, f: F) -> Result<T>
+    pub async fn throttle<Fut, F, T>(&self, f: F) -> T
     where
         Fut: std::future::Future<Output = T>,
         F: FnOnce() -> Fut,
     {
         self.wait().await;
-        Ok(f().await)
+        f().await
     }
 
     /// Waits for the interval to tick.
@@ -105,6 +104,7 @@ impl RateLimiter {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use anyhow::Result;
     use std::sync::Arc;
     use std::time::Instant;
 
@@ -114,7 +114,7 @@ mod tests {
         let start = Instant::now();
 
         for _ in 0..10 {
-            rate_limiter.throttle(|| async {}).await?;
+            rate_limiter.throttle(|| async {}).await;
         }
 
         let end = start.elapsed().as_millis();
@@ -131,7 +131,7 @@ mod tests {
 
         let start = Instant::now();
         for _ in 0..10 {
-            rate_limiter.throttle(hello).await?;
+            rate_limiter.throttle(hello).await;
         }
         let end = start.elapsed().as_millis();
 
@@ -154,7 +154,7 @@ mod tests {
             let data = data.clone();
             let rate_limiter = rate_limiter.clone();
             tokio::spawn(async move {
-                rate_limiter.throttle(|| hello(data.clone())).await?;
+                rate_limiter.throttle(|| hello(data.clone())).await;
                 Ok::<(), anyhow::Error>(())
             })
         });
@@ -195,7 +195,7 @@ mod tests {
             let data = data.clone();
             let rate_limiter = rate_limiter.clone();
             tokio::spawn(async move {
-                rate_limiter.throttle(|| hello(data.clone())).await?;
+                rate_limiter.throttle(|| hello(data.clone())).await;
                 Ok::<(), anyhow::Error>(())
             })
         });
