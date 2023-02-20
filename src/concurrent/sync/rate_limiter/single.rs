@@ -45,7 +45,6 @@ impl RateLimiter {
         F: FnOnce() -> Fut,
     {
         self.wait().await;
-        println!("current time is {:?}", std::time::Instant::now());
         Ok(f().await)
     }
 

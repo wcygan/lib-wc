@@ -266,6 +266,7 @@ dependencies = [
  "futures",
  "log",
  "once_cell",
+ "rand",
  "rayon",
  "serde",
  "serde_derive",
