@@ -4,19 +4,15 @@ version = "0.1.10"
 edition = "2021"
 readme = "README.md"
 description = "Will's Programming Toolbox"
-categories = ["concurrent-programming", "asynchronous", "network-programming"]
-keywords = ["async", "non-blocking", "futures", "concurrent", "data-structures"]
+categories = ["async", "concurrent-programming", "asynchronous-programming"]
+keywords = ["async", "concurrent", "non-blocking", "futures", "data-structures"]
 exclude = ["/benches", "/.github", "/fuzz"]
 repository = "https://github.com/wcygan/lib-wc"
 homepage = "https://github.com/wcygan/lib-wc"
 license = "MPL-2.0"
 
 [features]
-
-# The useful parts of the library
-default = []
-
-# experimental unsafe stuff that nobody should use :)
+# use at your own risk :)
 dangerous = []
 
 [dependencies]
