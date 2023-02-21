@@ -13,7 +13,7 @@ struct Cli {
     period_ms: u64,
 
     /// The number of clients to spawn
-    #[arg(short = 'c', long, value_name = "clients", default_value = "16")]
+    #[arg(short = 'c', long, value_name = "clients", default_value = "64")]
     clients: u64,
 
     /// The radix which is used to spread clients across different sets of keys.
@@ -101,7 +101,7 @@ async fn listen(key: Key, mut rx: tokio::sync::mpsc::Receiver<Key>, period: Dura
 
     let mut interval = tokio::time::interval_at(
         tokio::time::Instant::now() + period,
-        Duration::from_secs_f64(2.0),
+        Duration::from_millis(500),
     );
 
     let mut count = 0;

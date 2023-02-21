@@ -1,5 +1,7 @@
 # Client-Side Rate Limiting
 
+> I made a [post](https://www.wcygan.io/post/tokio-client-side-rate-limiting/) about this topic
+
 This example demonstrates how to use the `tokio` runtime to implement a rate limiting.
 
 ## Example
