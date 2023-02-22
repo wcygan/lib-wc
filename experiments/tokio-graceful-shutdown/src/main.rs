@@ -1,9 +1,8 @@
 use std::time::Duration;
 
-use lib_wc::sync::Shutdown;
+use lib_wc::sync::{ShutdownController, ShutdownListener};
 use tokio::select;
 use tokio::signal::ctrl_c;
-use tokio::sync::{broadcast, mpsc};
 use tokio::time::{interval, interval_at};
 
 /// Graceful Shutdown (https://tokio.rs/tokio/topics/shutdown)
@@ -11,7 +10,7 @@ use tokio::time::{interval, interval_at};
 /// A clear implementation of graceful shutdown using tokio::sync::broadcast
 /// and tokio::sync::mpsc.
 ///
-/// This example spawns 10 tasks that each print a message every second.
+/// This example spawns 10 tasks that do work until being told to stop.
 ///
 /// After 2 seconds, or when an interrupt signal is received, the main task sends
 /// a shutdown signal to all tasks.
@@ -21,15 +20,13 @@ use tokio::time::{interval, interval_at};
 /// The main task waits for all tasks to finish and then exits.
 #[tokio::main]
 async fn main() {
-    let (notify_shutdown, _) = broadcast::channel::<()>(1);
-    let (shutdown_complete_tx, mut shutdown_complete_rx) = mpsc::channel::<()>(1);
+    let shutdown = ShutdownController::new();
 
     // Spawn 10 tens
     for i in 0..10 {
-        let shutdown = Shutdown::new(notify_shutdown.subscribe());
-        let shutdown_complete_tx = shutdown_complete_tx.clone();
+        let shutdown = shutdown.subscribe();
         tokio::spawn(async move {
-            let mut task = Task::new(i, shutdown, shutdown_complete_tx);
+            let mut task = Task::new(i, shutdown);
             task.run().await;
         });
     }
@@ -51,16 +48,7 @@ async fn main() {
     }
 
     println!("shutdown starting");
-
-    // Send shutdown signal to all tasks
-    drop(notify_shutdown);
-
-    // Wait for all tasks to finish
-    //    Note:  We need to drop `shutdown_complete_tx` here
-    //           because otherwise the `recv` will never return.
-    drop(shutdown_complete_tx);
-    let _ = shutdown_complete_rx.recv().await;
-
+    shutdown.shutdown().await;
     println!("shutdown complete");
 }
 
@@ -69,19 +57,12 @@ struct Task {
     id: u32,
 
     /// Shutdown signal that is used to signal that the task should stop
-    shutdown: Shutdown,
-
-    /// Implicitly used to signal that the task has finished by being dropped
-    _shutdown_complete_tx: mpsc::Sender<()>,
+    shutdown: ShutdownListener,
 }
 
 impl Task {
-    pub fn new(id: u32, shutdown: Shutdown, _shutdown_complete_tx: mpsc::Sender<()>) -> Self {
-        Self {
-            id,
-            shutdown,
-            _shutdown_complete_tx,
-        }
+    pub fn new(id: u32, shutdown: ShutdownListener) -> Self {
+        Self { id, shutdown }
     }
 
     /// Simulate some work
@@ -94,7 +75,12 @@ impl Task {
                     return;
                 }
                 _ = interval.tick() => {
-                    println!("{} ticked", self.id);
+                    if self.id % 2 == 0 {
+                        tokio::time::sleep(Duration::from_millis(850)).await;
+                        println!("{}: long tick", self.id)
+                    } else {
+                        println!("{} tick", self.id);
+                    }
                 }
             }
         }

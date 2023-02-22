@@ -6,7 +6,7 @@
 //!
 //! * [`sync::MultiRateLimiter`], a key-based rate limiter
 //! * [`sync::RateLimiter`], a rate limiter
-//! * [`sync::Shutdown`], a tool to signal shutdown and wait for completion of asynchronous tasks
+//! * [`sync::ShutdownController`], a tool to signal shutdown and wait for completion of asynchronous tasks
 //! * [`sync::ds::BasicSharedMap`], a concurrent map that can be cloned and shared between threads
 //! * [`executors::RayonThreadPool`], a thread pool which can wait for all tasks to complete before shutting down
 //!
