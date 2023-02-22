@@ -106,6 +106,12 @@ impl ShutdownController {
     }
 }
 
+impl Default for ShutdownController {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 /// Listens for a shutdown signal.
 ///
 /// Shutdown is signalled using a [`broadcast::Receiver`]. Only a single value is
