@@ -172,11 +172,8 @@ impl ShutdownListener {
     ///    while !shutdown.is_shutdown() {
     ///       select! {
     ///         _ = shutdown.recv() => { return; }
-    ///         _ = rate_limiter.throttle(|| async {}) => { println!("tick"); }
+    ///         _ = rate_limiter.throttle(|| async { /* do work */ }) => { println!("tick"); }
     ///       }
-    ///
-    ///       // Do some kind of work like fetch data over a network
-    ///       // or process incoming requests.
     ///   }
     /// }
     /// ```
