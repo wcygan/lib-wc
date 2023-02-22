@@ -1,14 +1,36 @@
 use tokio::sync::{broadcast, mpsc};
 
-/// A [`ShutdownController`] is used to signal that the application is shutting down and should wait
-/// for all pending tasks to complete.
+/// A [`ShutdownController`] is used to control the shutdown of an application.
+///
+/// [`ShutdownController::shutdown`] is used signal that the application is shutting down
+/// and should wait for all pending tasks to complete.
 ///
 /// This is useful for things like web servers and database connections, etc where you want
 /// to allow all in-flight processing to complete before shutting down in order to maintain a
 /// consistent state.
 ///
-/// Calling [`ShutdownController::shutdown`] will cause all [`ShutdownListener`] instances
-/// to complete their [`ShutdownListener::recv`] calls.
+/// # Examples
+///
+/// ```
+/// use lib_wc::sync::ShutdownController;
+/// use tokio::task::spawn;
+///
+/// #[tokio::main]
+/// async fn main() {
+///     let shutdown = ShutdownController::new();
+///     
+///     let t = spawn({
+///         let mut shutdown_listener = shutdown.subscribe();
+///         assert!(!shutdown_listener.is_shutdown());
+///         async move {
+///             shutdown_listener.recv().await;
+///             assert!(shutdown_listener.is_shutdown());
+///         }
+///     });
+///
+///     shutdown.shutdown().await;
+/// }
+/// ```
 pub struct ShutdownController {
     /// Used to tell all [`ShutdownListener`] instances that shutdown has started.
     notify_shutdown: broadcast::Sender<()>,

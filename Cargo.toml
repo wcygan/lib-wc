@@ -1,6 +1,6 @@
 [package]
 name = "lib-wc"
-version = "0.1.13"
+version = "0.1.14"
 edition = "2021"
 readme = "README.md"
 description = "Will's Programming Toolbox"
