@@ -1,7 +1,7 @@
 use tokio::sync::{broadcast, mpsc};
 
-/// A [`ShutdownController`] is used to signal that the application is shutting down, allowing
-/// for the application to shut down gracefully.
+/// A [`ShutdownController`] is used to signal that the application is shutting down and should wait
+/// for all pending tasks to complete.
 ///
 /// This is useful for things like web servers and database connections, etc where you want
 /// to allow all in-flight processing to complete before shutting down in order to maintain a
@@ -9,10 +9,9 @@ use tokio::sync::{broadcast, mpsc};
 ///
 /// Calling [`ShutdownController::shutdown`] will cause all [`ShutdownListener`] instances
 /// to complete their [`ShutdownListener::recv`] calls.
-///
 pub struct ShutdownController {
     /// Used to tell all [`ShutdownListener`] instances that shutdown has started.
-    notify: broadcast::Sender<()>,
+    notify_shutdown: broadcast::Sender<()>,
 
     /// Implicitly used to determine when all [`ShutdownListener`] instances have been dropped.
     task_tracker: mpsc::Sender<()>,
@@ -31,14 +30,27 @@ impl ShutdownController {
     /// let shutdown = lib_wc::sync::ShutdownController::new();
     /// ```
     pub fn new() -> Self {
-        let (notify, _) = broadcast::channel::<()>(1);
+        let (notify_shutdown, _) = broadcast::channel::<()>(1);
         let (task_tracker, task_waiter) = mpsc::channel::<()>(1);
 
         Self {
-            notify,
+            notify_shutdown,
             task_tracker,
             task_waiter,
         }
+    }
+
+    /// Create a new [`ShutdownListener`] instance that can listen for the shutdown signal.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use lib_wc::sync::{ShutdownController, ShutdownListener};
+    ///
+    /// let shutdown = ShutdownController::new();
+    /// let shutdown_listener = shutdown.subscribe();
+    pub fn subscribe(&self) -> ShutdownListener {
+        ShutdownListener::new(self.notify_shutdown.subscribe(), self.task_tracker.clone())
     }
 
     /// Begin shutting down and wait for all [`ShutdownListener`] instances to be dropped.
@@ -61,7 +73,7 @@ impl ShutdownController {
     ///          }
     ///          _ = shutdown.recv() => {
     ///            println!("shutdown");
-    ///           break;
+    ///            break;
     ///          }
     ///        }
     ///    }
@@ -83,18 +95,14 @@ impl ShutdownController {
     /// ```
     pub async fn shutdown(mut self) {
         // Notify all tasks that shutdown has started
-        drop(self.notify);
+        drop(self.notify_shutdown);
 
-        // Drop the local shutdown complete handle so that `shutdown_complete_rx.recv().await`
-        // will return when all remaining `shutdown_complete_tx` handles have been dropped
+        // Destroy our mpsc::Sender so that the mpsc::Receiver::recv() will return immediately
+        // once all tasks have completed (i.e. dropped their mpsc::Sender)
         drop(self.task_tracker);
 
         // Wait for all tasks to finish
         let _ = self.task_waiter.recv().await;
-    }
-
-    pub fn subscribe(&self) -> ShutdownListener {
-        ShutdownListener::new(self.notify.subscribe(), self.task_tracker.clone())
     }
 }
 
@@ -110,22 +118,25 @@ impl ShutdownController {
 #[derive(Debug)]
 pub struct ShutdownListener {
     /// `true` if the shutdown signal has been received
-    shutdown: bool,
+    shutdown_received: bool,
 
     /// The receive half of the channel used to listen for shutdown.
-    notifier: broadcast::Receiver<()>,
+    shutdown_notifier: broadcast::Receiver<()>,
 
     /// Implicitly used to help [`ShutdownController`] understand when the program
     /// has completed shutdown.
-    _tracker: mpsc::Sender<()>,
+    _task_tracker: mpsc::Sender<()>,
 }
 
 impl ShutdownListener {
-    fn new(notify: broadcast::Receiver<()>, _task_tracker: mpsc::Sender<()>) -> ShutdownListener {
+    fn new(
+        shutdown_notifier: broadcast::Receiver<()>,
+        _task_tracker: mpsc::Sender<()>,
+    ) -> ShutdownListener {
         ShutdownListener {
-            shutdown: false,
-            notifier: notify,
-            _tracker: _task_tracker,
+            shutdown_received: false,
+            shutdown_notifier,
+            _task_tracker,
         }
     }
 
@@ -155,7 +166,7 @@ impl ShutdownListener {
     /// }
     /// ```
     pub fn is_shutdown(&self) -> bool {
-        self.shutdown
+        self.shutdown_received
     }
 
     /// Receive the shutdown notice, waiting if necessary.
@@ -180,14 +191,14 @@ impl ShutdownListener {
     pub async fn recv(&mut self) {
         // If the shutdown signal has already been received, then return
         // immediately.
-        if self.shutdown {
+        if self.shutdown_received {
             return;
         }
 
         // Cannot receive a "lag error" as only one value is ever sent.
-        let _ = self.notifier.recv().await;
+        let _ = self.shutdown_notifier.recv().await;
 
         // Remember that the signal has been received.
-        self.shutdown = true;
+        self.shutdown_received = true;
     }
 }
