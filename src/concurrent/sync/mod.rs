@@ -3,6 +3,7 @@
 pub use rate_limiter::{MultiRateLimiter, RateLimiter};
 pub mod ds;
 pub use shutdown::{ShutdownController, ShutdownListener};
+mod backoff;
 mod rate_limiter;
 mod shutdown;
 
