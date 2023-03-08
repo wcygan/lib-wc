@@ -254,7 +254,9 @@ dependencies = [
 
 [[package]]
 name = "lib-wc"
-version = "0.1.12"
+version = "0.1.14"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c9969342954a667f76945a18500e290447746692df742c869e30235f451f4f8f"
 dependencies = [
  "anyhow",
  "atomic-wait",
