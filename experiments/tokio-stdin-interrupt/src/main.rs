@@ -7,12 +7,17 @@ async fn main() {
     let (tx, mut rx) = mpsc::channel::<String>(10);
     std::thread::spawn(move || get_input(tx));
 
-    select! {
-        _ = tokio::signal::ctrl_c() => {}
-        line = rx.recv() => {
-            match line {
-                Some(s) => println!("{s}"),
-                None => {}
+    loop {
+        select! {
+            _ = tokio::signal::ctrl_c() => {
+                println!("Done");
+                return;
+            }
+            line = rx.recv() => {
+                match line {
+                    Some(s) => println!("{s}"),
+                    None => {}
+                }
             }
         }
     }
