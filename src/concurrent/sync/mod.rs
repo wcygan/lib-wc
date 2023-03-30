@@ -1,11 +1,7 @@
 //! Synchronization tools for concurrent programming
 
-pub use rate_limiter::{MultiRateLimiter, RateLimiter};
-pub mod ds;
-pub use shutdown::{ShutdownController, ShutdownListener};
 mod backoff;
-mod rate_limiter;
-mod shutdown;
+pub mod ds;
 
 cfg_dangerous! {
     pub use channels::{mpmc, oneshot};
