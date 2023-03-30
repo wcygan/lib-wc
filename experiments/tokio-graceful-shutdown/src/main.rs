@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use lib_wc::sync::{ShutdownController, ShutdownListener};
+use shutdown_async::{ShutdownController, ShutdownMonitor};
 use tokio::select;
 use tokio::signal::ctrl_c;
 use tokio::time::{interval, interval_at};
@@ -57,11 +57,11 @@ struct Task {
     id: u32,
 
     /// Shutdown signal that is used to signal that the task should stop
-    shutdown: ShutdownListener,
+    shutdown: ShutdownMonitor,
 }
 
 impl Task {
-    pub fn new(id: u32, shutdown: ShutdownListener) -> Self {
+    pub fn new(id: u32, shutdown: ShutdownMonitor) -> Self {
         Self { id, shutdown }
     }
 
