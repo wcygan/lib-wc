@@ -1,6 +1,6 @@
 use anyhow::Result;
+use async_throttle::MultiRateLimiter;
 use clap::Parser;
-use lib_wc::sync::MultiRateLimiter;
 use std::collections::HashMap;
 use std::sync::Arc;
 use std::time::Duration;
